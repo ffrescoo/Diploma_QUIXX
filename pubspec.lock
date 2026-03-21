@@ -91,6 +91,19 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  go_router:
+    dependency: "direct main"
+    description:
+      name: go_router
+      sha256: "7974313e217a7771557add6ff2238acb63f635317c35fa590d348fb238f00896"
+      url: "https://pub.dev"
+    source: hosted
+    version: "17.1.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -135,10 +148,10 @@ packages:
     dependency: "direct main"
     description:
       name: liquid_glass_widgets
-      sha256: "1d65930f1d0bae16c6a3b78b4bbc5f7b0c40e6fb21c28559109b02c3e65bd0dc"
+      sha256: "9a17c4c570da40de2158f831b298c2a3cc47aebd351335bd4f1a8c2898beb52a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0-dev.6"
+    version: "0.4.0-dev.7"
   logging:
     dependency: transitive
     description:
@@ -266,4 +279,4 @@ packages:
     version: "15.0.2"
 sdks:
   dart: ">=3.11.3 <4.0.0"
-  flutter: ">=3.32.4"
+  flutter: ">=3.35.0"
