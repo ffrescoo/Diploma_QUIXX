@@ -18,13 +18,14 @@ class AppBackground extends StatelessWidget {
               Color(0xFF22052D),
               Color(0xFF000000),
             ],
+            seed: 120,
             options: AnimatedMeshGradientOptions(
               speed: 1,
-              frequency: 3,
+              frequency: 6,
               amplitude: 15,
               grain: 0.1,
             ),
-          ),
+          )
         ),
         child,
       ],

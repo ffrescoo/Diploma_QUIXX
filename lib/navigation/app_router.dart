@@ -22,32 +22,32 @@ class AppRouter {
         builder: (context, state, navigationShell) {
           return LayoutPage(navigationShell: navigationShell);
         },
-          branches: [
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: home,
-                  builder: (context, state) => const HomeTab(),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: stats,
-                  builder: (context, state) => const StatsTab(),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: workout,
-                  builder: (context, state) => const WorkoutTab(),
-                ),
-              ],
-            ),
-          ],
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: home,
+                builder: (context, state) => const HomeTab(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: stats,
+                builder: (context, state) => const StatsTab(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: workout,
+                builder: (context, state) => const WorkoutTab(),
+              ),
+            ],
+          ),
+        ],
       ),
 
       GoRoute(

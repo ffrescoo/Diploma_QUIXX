@@ -30,8 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  liquid_glass_widgets: ^0.4.0-dev.6
+  liquid_glass_widgets: ^0.4.0-dev.7
   mesh_gradient: ^1.3.8
+  flutter_svg: ^2.0.10
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -54,6 +55,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - lib/img/Avatar.svg
+    - lib/img/Quixx.svg
+    - lib/img/text.svg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

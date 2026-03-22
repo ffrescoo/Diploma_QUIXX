@@ -18,6 +18,15 @@ class ShowcaseGlassTheme {
         glassColor: Colors.white12,
       );
 
+  static LiquidGlassSettings get profileButtonBig => LiquidGlassSettings(
+    blur: 8,
+    thickness: 10,
+    ambientStrength: 0.9,
+    lightIntensity: 0.9,
+    lightAngle: standardLightAngle,
+    glassColor: Colors.white12,
+  );
+
   static const GlassQuality standardQuality = GlassQuality.standard;
   static const GlassQuality premiumQuality = GlassQuality.premium;
 }
