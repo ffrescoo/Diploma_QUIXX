@@ -7,25 +7,27 @@ import 'package:flutter_svg/flutter_svg.dart';
 class EditProfile extends StatelessWidget {
   final String avatarPath;
 
-  const EditProfile({
-    super.key,
-    required this.avatarPath,
-  });
+  const EditProfile({super.key, required this.avatarPath});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: const Color(0xFF090012),
       body: SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(top: 70, left: 10, right: 10, bottom: 20),
-                  clipBehavior: Clip.none,
-                  child: AdaptiveLiquidGlassLayer(
-                    settings: ShowcaseGlassTheme.profileButtonBig,
-                    quality: ShowcaseGlassTheme.standardQuality,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  top: 70,
+                  left: 10,
+                  right: 10,
+                  bottom: 20,
+                ),
+                clipBehavior: Clip.none,
+                child: AdaptiveLiquidGlassLayer(
+                  settings: ShowcaseGlassTheme.profileButtonBig,
+                  quality: ShowcaseGlassTheme.standardQuality,
                   child: Column(
                     spacing: 15,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,31 +49,23 @@ class EditProfile extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            GlassButton.custom(
-                              width: 180,
-                              height: 40,
-                              shape: const LiquidRoundedSuperellipse(borderRadius: 25),
-                              onTap: () {},
-                              child: const Text(
-                                'Change profile photo',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500),
+                            Text(
+                              'Change profile photo',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 15),
-
                       const Text(
                         "Public profile data",
                         style: TextStyle(
                           color: Colors.white54,
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
 
@@ -82,7 +76,7 @@ class EditProfile extends StatelessWidget {
                           shape: LiquidRoundedSuperellipse(borderRadius: 25),
                           placeholderStyle: TextStyle(
                             color: Colors.white70,
-                            fontSize: 18,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -94,7 +88,7 @@ class EditProfile extends StatelessWidget {
                           shape: LiquidRoundedSuperellipse(borderRadius: 25),
                           placeholderStyle: TextStyle(
                             color: Colors.white70,
-                            fontSize: 18,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -106,7 +100,7 @@ class EditProfile extends StatelessWidget {
                           shape: LiquidRoundedSuperellipse(borderRadius: 25),
                           placeholderStyle: TextStyle(
                             color: Colors.white70,
-                            fontSize: 18,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -118,7 +112,6 @@ class EditProfile extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white54,
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
 
@@ -131,6 +124,10 @@ class EditProfile extends StatelessWidget {
                         name: 'Sex:',
                         field: const GenderSegmented(),
                       ),
+                      Divider(
+                        color: Colors.grey,
+                        thickness: 0.5,
+                      ),
 
                       SvgPicture.asset(
                         'lib/img/Quixx.svg',
@@ -139,73 +136,96 @@ class EditProfile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  ),
                 ),
               ),
+            ),
 
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  child: AdaptiveLiquidGlassLayer(
-                    quality: ShowcaseGlassTheme.premiumQuality,
-                    settings: ShowcaseGlassTheme.profileButton,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GlassButton(
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 10,
+                ),
+                child: AdaptiveLiquidGlassLayer(
+                  quality: ShowcaseGlassTheme.premiumQuality,
+                  settings: ShowcaseGlassTheme.profileButton,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: GlassButton(
                           icon: Icons.arrow_back,
                           iconSize: 25,
                           width: 45,
                           height: 45,
                           onTap: () => context.pop(),
+                        ),
                       ),
-                        GlassButton.custom(
-                          width: 100,
+                      GlassButton.custom(
+                        width: 120,
+                        height: 45,
+                        shape: const LiquidRoundedSuperellipse(
+                          borderRadius: 25,
+                        ),
+                        onTap: () {},
+                        child: const Text(
+                          'Edit profile',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: GlassButton.custom(
+                          width: 70,
                           height: 45,
-                          shape: const LiquidRoundedSuperellipse(borderRadius: 25),
+                          shape: const LiquidRoundedSuperellipse(
+                            borderRadius: 25,
+                          ),
                           onTap: () {},
                           child: const Text(
                             'Done',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.w500),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildProfileField({
-    required String name,
-    required Widget field,
-  }) {
+  Widget _buildProfileField({required String name, required Widget field}) {
     return Row(
       children: [
         SizedBox(
+          width: 90,
           child: Text(
             name,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
         ),
         const SizedBox(width: 10),
-        Expanded(
-          child: field,
-        ),
+        Expanded(child: field),
       ],
     );
   }
@@ -213,6 +233,7 @@ class EditProfile extends StatelessWidget {
 
 class DatePickerField extends StatefulWidget {
   final String label;
+
   const DatePickerField({super.key, required this.label});
 
   @override
@@ -244,14 +265,8 @@ class _DatePickerFieldState extends State<DatePickerField> {
             ? "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}"
             : "Select date",
         shape: const LiquidRoundedSuperellipse(borderRadius: 25),
-        placeholderStyle: const TextStyle(
-          color: Colors.white70,
-          fontSize: 18,
-        ),
-        prefixIcon: const Icon(
-          Icons.calendar_today,
-          color: Colors.white70,
-        ),
+        placeholderStyle: const TextStyle(color: Colors.white70, fontSize: 14),
+        prefixIcon: const Icon(Icons.calendar_today, color: Colors.white70),
       ),
     );
   }
@@ -259,6 +274,7 @@ class _DatePickerFieldState extends State<DatePickerField> {
 
 class GenderSegmented extends StatefulWidget {
   const GenderSegmented({super.key});
+
   @override
   State<GenderSegmented> createState() => _GenderSegmentedState();
 }
@@ -266,6 +282,7 @@ class GenderSegmented extends StatefulWidget {
 class _GenderSegmentedState extends State<GenderSegmented> {
   int _selectedSegment = 0;
   final List<String> genders = ['Male', 'Female'];
+
   @override
   Widget build(BuildContext context) {
     return GlassSegmentedControl(
