@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:go_router/go_router.dart';
+import '../navigation/app_router.dart';
 import '../theme/showcase_glass_theme.dart';
 import '../widgets/app_background.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -27,7 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 Positioned.fill(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 70, left: 10, right: 10, bottom: 100),
+                    padding: const EdgeInsets.only(top: 70, left: 10, right: 10, bottom: 10),
                     clipBehavior: Clip.none,
                     child: Column(
                       spacing: 15,
@@ -46,14 +47,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         _buildDashboardSection(),
                         _buildWorkoutSection(),
-
-                        const SizedBox(height: 80),
-
-                        SvgPicture.asset(
-                          'lib/img/text.svg',
-                          width: MediaQuery.of(context).size.width,
-                          fit: BoxFit.fitWidth,
-                        ),
                       ],
                     ),
                   ),
@@ -119,7 +112,10 @@ class _ProfilePageState extends State<ProfilePage> {
             width: 45,
             height: 45,
             iconSize: 25,
-            onTap: () {},
+            onTap: () => context.push(
+              AppRouter.editProfile,
+              extra: 'lib/img/Avatar.svg',
+            ),
           ),
           GlassButton(
             icon: Icons.share,
@@ -277,6 +273,14 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         Stack(
           children: [
+            Container(
+              margin: const EdgeInsets.only(top: 36, left: 36, right: 36),
+              height: 150,
+              decoration: BoxDecoration(
+                  color: const Color(0xFF232323).withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white10)),
+            ),
             Container(
               margin: const EdgeInsets.only(top: 24, left: 24, right: 24),
               height: 150,
