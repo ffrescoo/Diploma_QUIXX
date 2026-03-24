@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import '../theme/showcase_glass_theme.dart';
 import 'package:go_router/go_router.dart';
 
 class AppHeaderBar extends StatelessWidget {
@@ -18,10 +17,7 @@ class AppHeaderBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveLiquidGlassLayer(
-      quality: ShowcaseGlassTheme.premiumQuality,
-      settings: ShowcaseGlassTheme.profileButton,
-      child: Stack(
+    return Stack(
         alignment: Alignment.topCenter,
         children: [
           Align(
@@ -78,7 +74,6 @@ class AppHeaderBar extends StatelessWidget {
             ),
           ),
         ],
-      ),
     );
   }
 }

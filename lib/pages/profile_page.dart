@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:go_router/go_router.dart';
 import '../navigation/app_router.dart';
-import '../theme/showcase_glass_theme.dart';
-import '../widgets/app_background.dart';
+import '../widgets/app_default_layout.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -18,69 +17,38 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: SizedBox.expand(
-        child: AppBackground(
-          child: SafeArea(
-            bottom: false,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 70, left: 10, right: 10, bottom: 10),
-                    clipBehavior: Clip.none,
-                    child: Column(
-                      spacing: 15,
-                      children: [
-                        _buildUserHeader(),
-                        _buildEmptyStatsChart(),
-                        GlassSegmentedControl(
-                          segments: const ['Duration', 'Volume', 'Reps'],
-                          glassSettings: ShowcaseGlassTheme.profileButton,
-                          selectedIndex: _selectedSegment,
-                          onSegmentSelected: (index) {
-                            setState(() {
-                              _selectedSegment = index;
-                            });
-                          },
-                        ),
-                        _buildDashboardSection(),
-                        _buildWorkoutSection(),
-                      ],
-                    ),
-                  ),
-                ),
-
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GlassButton(
-                          quality: ShowcaseGlassTheme.premiumQuality,
-                          settings: ShowcaseGlassTheme.profileButton,
-                          useOwnLayer: true,
-                          icon: Icon(Icons.arrow_back),
-                          iconSize: 25,
-                          width: 45,
-                          height: 45,
-                          onTap: () => context.pop(),
-                        ),
-                        _buildTopActionButtons(),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return AppDefaultLayout(
+      body: Column(
+        spacing: 15,
+        children: [
+          _buildUserHeader(),
+          _buildEmptyStatsChart(),
+          GlassSegmentedControl(
+            segments: const ['Duration', 'Volume', 'Reps'],
+            selectedIndex: _selectedSegment,
+            onSegmentSelected: (index) {
+              setState(() {
+                _selectedSegment = index;
+              });
+            },
           ),
-        ),
+          _buildDashboardSection(),
+          _buildWorkoutSection(),
+        ],
       ),
+      top: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            GlassButton(
+              icon: Icon(Icons.arrow_back),
+              iconSize: 25,
+              width: 45,
+              height: 45,
+              onTap: () => context.pop(),
+            ),
+            _buildTopActionButtons(),
+          ],
+        ),
     );
   }
 
@@ -95,9 +63,6 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
       child: GlassButtonGroup(
-        glassSettings: ShowcaseGlassTheme.profileButton,
-        quality: ShowcaseGlassTheme.premiumQuality,
-        useOwnLayer: true,
         borderRadius: 30,
         borderColor: Colors.transparent,
         children: [
@@ -225,9 +190,6 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         SizedBox(
           width: double.infinity,
-          child: AdaptiveLiquidGlassLayer(
-            settings: ShowcaseGlassTheme.profileButtonBig,
-            quality: ShowcaseGlassTheme.standardQuality,
             child: Column(
               spacing: 10,
               children: [
@@ -247,7 +209,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
-          ),
         ),
       ],
     );

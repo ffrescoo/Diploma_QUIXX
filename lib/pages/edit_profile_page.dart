@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import '../widgets/app_header_bar.dart';
-import '../theme/showcase_glass_theme.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../theme/showcase_glass_theme.dart';
+import '../widgets/app_default_layout.dart';
+import '../widgets/app_header_bar.dart';
 
 class EditProfile extends StatelessWidget {
   final String avatarPath;
@@ -11,153 +12,96 @@ class EditProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF090012),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                  top: 70,
-                  left: 10,
-                  right: 10,
-                  bottom: 20,
+    return AppDefaultLayout(
+      body: Column(
+        spacing: 15,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: const BoxDecoration(
+                    color: Colors.white10,
+                    shape: BoxShape.circle,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: SvgPicture.asset(avatarPath, fit: BoxFit.cover),
                 ),
-                clipBehavior: Clip.none,
-                child: AdaptiveLiquidGlassLayer(
-                  settings: ShowcaseGlassTheme.profileButtonBig,
-                  quality: ShowcaseGlassTheme.standardQuality,
-                  child: Column(
-                    spacing: 15,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 120,
-                              height: 120,
-                              decoration: const BoxDecoration(
-                                color: Colors.white10,
-                                shape: BoxShape.circle,
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: SvgPicture.asset(
-                                avatarPath,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Change profile photo',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const Text(
-                        "Public profile data",
-                        style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 18,
-                        ),
-                      ),
-
-                      _buildProfileField(
-                        name: 'Name:',
-                        field: const GlassTextField(
-                          placeholder: '@NoNameUser',
-                          shape: LiquidRoundedSuperellipse(borderRadius: 25),
-                          placeholderStyle: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-
-                      _buildProfileField(
-                        name: 'Bio:',
-                        field: const GlassTextArea(
-                          placeholder: 'Tell about yourself...',
-                          shape: LiquidRoundedSuperellipse(borderRadius: 25),
-                          placeholderStyle: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-
-                      _buildProfileField(
-                        name: 'Link:',
-                        field: const GlassTextField(
-                          placeholder: 'https://example.com',
-                          shape: LiquidRoundedSuperellipse(borderRadius: 25),
-                          placeholderStyle: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      const Text(
-                        "Private data",
-                        style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 18,
-                        ),
-                      ),
-
-                      _buildProfileField(
-                        name: 'Birthday:',
-                        field: const DatePickerField(label: 'Birthday'),
-                      ),
-
-                      _buildProfileField(
-                        name: 'Sex:',
-                        field: const GenderSegmented(),
-                      ),
-                      Divider(
-                        color: Colors.grey,
-                        thickness: 0.5,
-                      ),
-
-                      SvgPicture.asset(
-                        'assets/images/Quixx.svg',
-                        width: MediaQuery.of(context).size.width,
-                        fit: BoxFit.fitWidth,
-                      ),
-                    ],
+                const SizedBox(height: 10),
+                Text(
+                  'Change profile photo',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
+              ],
             ),
+          ),
 
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 10,
-                ),
-                child: AppHeaderBar(
-                  title: 'Edit profile',
-                  secondButtonTitle: 'Done',
-                  secondButtonWidth: double.infinity,
-                )
-              ),
+          const Text(
+            "Public profile data",
+            style: TextStyle(color: Colors.white54, fontSize: 18),
+          ),
+
+          _buildProfileField(
+            name: 'Name:',
+            field: const GlassTextField(
+              placeholder: '@NoNameUser',
+              shape: LiquidRoundedSuperellipse(borderRadius: 25),
+              placeholderStyle: TextStyle(color: Colors.white70, fontSize: 14),
             ),
-          ],
-        ),
+          ),
+
+          _buildProfileField(
+            name: 'Bio:',
+            field: const GlassTextArea(
+              placeholder: 'Tell about yourself...',
+              shape: LiquidRoundedSuperellipse(borderRadius: 25),
+              placeholderStyle: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ),
+
+          _buildProfileField(
+            name: 'Link:',
+            field: const GlassTextField(
+              placeholder: 'https://example.com',
+              shape: LiquidRoundedSuperellipse(borderRadius: 25),
+              placeholderStyle: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
+          const Text(
+            "Private data",
+            style: TextStyle(color: Colors.white54, fontSize: 18),
+          ),
+
+          _buildProfileField(
+            name: 'Birthday:',
+            field: const DatePickerField(label: 'Birthday'),
+          ),
+
+          _buildProfileField(name: 'Sex:', field: const GenderSegmented()),
+          Divider(color: Colors.grey, thickness: 0.5),
+
+          SvgPicture.asset(
+            'assets/images/Quixx.svg',
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.fitWidth,
+          ),
+        ],
+      ),
+
+      top: const AppHeaderBar(
+        title: 'Edit profile',
+        secondButtonTitle: 'Done',
+        secondButtonWidth: double.infinity,
       ),
     );
   }
@@ -169,10 +113,7 @@ class EditProfile extends StatelessWidget {
           width: 90,
           child: Text(
             name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
         ),
         const SizedBox(width: 10),

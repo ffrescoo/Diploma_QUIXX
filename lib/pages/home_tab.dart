@@ -58,36 +58,15 @@ class HomeTab extends StatelessWidget {
                       ),
 
                     Row(
-                      spacing: 9,
+                      spacing: 10,
                         children: [
-                          IntrinsicWidth(
-                            child: GlassButton.custom(
-                              width: double.infinity,
-                              height: 45,
-                              shape: const LiquidRoundedSuperellipse(
-                                borderRadius: 25,
-                              ),
-                              onTap: () {},
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: Row(
-                                  spacing: 8,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text(
-                                      'Add post',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Icon(Icons.add, size: 24),
-                                  ],
-                                ),
-                              ),
-                            ),
+
+                          GlassButton(
+                            icon: Icon(Icons.add),
+                            iconSize: 25,
+                            width: 45,
+                            height: 45,
+                            onTap: () {},
                           ),
 
                           GlassButton(
@@ -99,7 +78,6 @@ class HomeTab extends StatelessWidget {
                           ),
                         ],
                       ),
-
                   ],
                 ),
               ),
