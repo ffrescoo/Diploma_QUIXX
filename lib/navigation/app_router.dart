@@ -7,6 +7,7 @@ import '../pages/stats_tab.dart';
 import '../pages/workout_tab.dart';
 import '../pages/edit_profile_page.dart';
 import '../pages/settings_page.dart';
+import '../pages/notifications_page.dart';
 
 class AppRouter {
   AppRouter._();
@@ -17,6 +18,7 @@ class AppRouter {
   static const String profile = '/profile';
   static const String editProfile = '/editProfile';
   static const String settingsPage = '/settingsPage';
+  static const String notificationsPage = '/notifications';
 
   static final GoRouter config = GoRouter(
     initialLocation: home,
@@ -73,6 +75,12 @@ class AppRouter {
         path: settingsPage,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SettingsPage(),
+      ),
+
+      GoRoute(
+        path: notificationsPage,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const NotificationsPage(),
       ),
     ],
   );

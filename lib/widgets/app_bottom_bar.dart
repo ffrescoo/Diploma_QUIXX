@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../theme/showcase_glass_theme.dart';
-import '../navigation/app_router.dart';
 
 class AppBottomBar extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -22,15 +21,27 @@ class AppBottomBar extends StatelessWidget {
       glassSettings: ShowcaseGlassTheme.profileButton,
       extraButton: GlassBottomBarExtraButton(
 
-        icon: Icons.person,
+        icon: Icon(Icons.interests_outlined),
         label: 'Profile',
-        onTap: () => context.push(AppRouter.profile),
+        onTap: () {},
       ),
 
       tabs: [
-        GlassBottomBarTab(label: 'Home', icon: Icons.home_outlined, selectedIcon: Icons.home),
-        GlassBottomBarTab(label: 'Stats', icon: Icons.insert_chart_outlined, selectedIcon: Icons.insert_chart),
-        GlassBottomBarTab(label: 'Workout', icon: Icons.fitness_center, selectedIcon: Icons.fitness_center),
+        GlassBottomBarTab(
+          label: 'Home',
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+        ),
+        GlassBottomBarTab(
+          label: 'Stats',
+          icon: Icon(Icons.insert_chart_outlined),
+          activeIcon: Icon(Icons.insert_chart),
+        ),
+        GlassBottomBarTab(
+          label: 'Workout',
+          icon: Icon(Icons.fitness_center_outlined),
+          activeIcon: Icon(Icons.fitness_center),
+        ),
       ],
       selectedIndex: navigationShell.currentIndex,
       onTabSelected: (index) {

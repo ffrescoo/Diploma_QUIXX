@@ -65,7 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           quality: ShowcaseGlassTheme.premiumQuality,
                           settings: ShowcaseGlassTheme.profileButton,
                           useOwnLayer: true,
-                          icon: Icons.arrow_back,
+                          icon: Icon(Icons.arrow_back),
                           iconSize: 25,
                           width: 45,
                           height: 45,
@@ -102,18 +102,18 @@ class _ProfilePageState extends State<ProfilePage> {
         borderColor: Colors.transparent,
         children: [
           GlassButton(
-            icon: Icons.edit,
+            icon: Icon(Icons.edit),
             style: GlassButtonStyle.transparent,
             width: 45,
             height: 45,
             iconSize: 25,
             onTap: () => context.push(
               AppRouter.editProfile,
-              extra: 'lib/img/Avatar.svg',
+              extra: 'assets/images/Avatar.svg',
             ),
           ),
           GlassButton(
-            icon: Icons.share,
+            icon: Icon(Icons.share),
             style: GlassButtonStyle.transparent,
             width: 45,
             height: 45,
@@ -121,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
             onTap: () {},
           ),
           GlassButton(
-            icon: Icons.settings,
+            icon: Icon(Icons.settings),
             style: GlassButtonStyle.transparent,
             width: 45,
             height: 45,
@@ -146,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Row(
           children: [
             SvgPicture.asset(
-              'lib/img/Avatar.svg',
+              'assets/images/Avatar.svg',
               height: 80,
               fit: BoxFit.contain,
             ),

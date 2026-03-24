@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import 'package:go_router/go_router.dart';
+import '../widgets/app_header_bar.dart';
 import '../theme/showcase_glass_theme.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -130,7 +130,7 @@ class EditProfile extends StatelessWidget {
                       ),
 
                       SvgPicture.asset(
-                        'lib/img/Quixx.svg',
+                        'assets/images/Quixx.svg',
                         width: MediaQuery.of(context).size.width,
                         fit: BoxFit.fitWidth,
                       ),
@@ -149,60 +149,11 @@ class EditProfile extends StatelessWidget {
                   horizontal: 10,
                   vertical: 10,
                 ),
-                child: AdaptiveLiquidGlassLayer(
-                  quality: ShowcaseGlassTheme.premiumQuality,
-                  settings: ShowcaseGlassTheme.profileButton,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: GlassButton(
-                          icon: Icons.arrow_back,
-                          iconSize: 25,
-                          width: 45,
-                          height: 45,
-                          onTap: () => context.pop(),
-                        ),
-                      ),
-                      GlassButton.custom(
-                        width: 120,
-                        height: 45,
-                        shape: const LiquidRoundedSuperellipse(
-                          borderRadius: 25,
-                        ),
-                        onTap: () {},
-                        child: const Text(
-                          'Edit profile',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GlassButton.custom(
-                          width: 70,
-                          height: 45,
-                          shape: const LiquidRoundedSuperellipse(
-                            borderRadius: 25,
-                          ),
-                          onTap: () {},
-                          child: const Text(
-                            'Done',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                child: AppHeaderBar(
+                  title: 'Edit profile',
+                  secondButtonTitle: 'Done',
+                  secondButtonWidth: double.infinity,
+                )
               ),
             ),
           ],
