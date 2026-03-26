@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:go_router/go_router.dart';
-import '../navigation/app_router.dart';
-import '../widgets/app_default_layout.dart';
+import '../navigation/appRouter.dart';
+import '../widgets/appDefaultLayout.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfilePage extends StatefulWidget {

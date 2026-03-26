@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../pages/layout_page.dart';
-import '../pages/profile_page.dart';
-import '../pages/home_tab.dart';
-import '../pages/stats_tab.dart';
-import '../pages/workout_tab.dart';
-import '../pages/edit_profile_page.dart';
-import '../pages/settings_page.dart';
-import '../pages/notifications_page.dart';
+import '../pages/layoutForTabs.dart';
+import '../pages/pageProfile.dart';
+import '../pages/tabHome.dart';
+import '../pages/tabStats.dart';
+import '../pages/tabWorkout.dart';
+import '../pages/pageEditProfile.dart';
+import '../pages/pageSettings.dart';
+import '../pages/pageNotifications.dart';
 
 class AppRouter {
   AppRouter._();

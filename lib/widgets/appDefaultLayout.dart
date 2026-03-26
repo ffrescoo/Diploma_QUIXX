@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import '../theme/showcase_glass_theme.dart';
+import '../theme/glass_theme.dart';
 
 class AppDefaultLayout extends StatelessWidget {
   final Widget body;

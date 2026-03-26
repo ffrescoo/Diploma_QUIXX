@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import 'navigation/app_router.dart';
+import 'navigation/appRouter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

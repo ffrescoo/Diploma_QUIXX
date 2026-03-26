@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/app_bottom_bar.dart';
-// import '../widgets/app_background.dart';
+import '../widgets/appBarBottom.dart';
+// import '../widgets/appBackground.dart';
 
 class LayoutPage extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
