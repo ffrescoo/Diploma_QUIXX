@@ -29,7 +29,7 @@ class AppDefaultLayout extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const SizedBox(height: 80),
+                      const SizedBox(height: 64),
                       AdaptiveLiquidGlassLayer(
                         settings: ShowcaseGlassTheme.profileButtonDark,
                         quality: ShowcaseGlassTheme.standardQuality,
@@ -40,7 +40,7 @@ class AppDefaultLayout extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: 15,
+                top: 12,
                 left: 0,
                 right: 0,
                 child: AdaptiveLiquidGlassLayer(

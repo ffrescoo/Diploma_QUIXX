@@ -13,7 +13,7 @@ class HomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppDefaultLayout(
       body: Column(
-        spacing: 15,
+        spacing: 12,
         children: [
           QuixxPost(
             username: 'Ronny_Coleman',
@@ -46,19 +46,19 @@ class HomeTab extends StatelessWidget {
           IntrinsicWidth(
             child: GlassButton.custom(
               width: double.infinity,
-              height: 50,
-              shape: const LiquidRoundedSuperellipse(borderRadius: 25),
+              height: 40,
+              shape: const LiquidRoundedSuperellipse(borderRadius: 20),
               onTap: () => context.push(AppRouter.profile),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 7),
                 child: Row(
-                  spacing: 10,
+                  spacing: 7,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SvgPicture.asset(
                       'assets/images/Avatar.svg',
-                      width: 30,
-                      height: 30,
+                      width: 26,
+                      height: 26,
                     ),
                     const Text(
                       'UserName',
@@ -76,20 +76,20 @@ class HomeTab extends StatelessWidget {
               GlassButton(
                 icon: ImageIcon(
                   AssetImage('assets/images/plus.png'),
-                  size: 25,
+                  size: 20,
                 ),
-                width: 50,
-                height: 50,
+                width: 40,
+                height: 40,
                 onTap: () {},
               ),
 
               GlassButton(
                 icon: ImageIcon(
                   AssetImage('assets/images/bell.png'),
-                  size: 25,
+                  size: 20,
                 ),
-                width: 50,
-                height: 50,
+                width: 40,
+                height: 40,
                 onTap: () => context.push(AppRouter.notificationsPage),
               ),
             ],

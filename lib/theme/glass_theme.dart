@@ -28,11 +28,11 @@ class ShowcaseGlassTheme {
 
   static LiquidGlassSettings get profileButtonBar => LiquidGlassSettings(
     blur: 15.0,
-    thickness: 50,
+    thickness: 45,
     ambientStrength: 0.5,
     lightIntensity: 0.1,
     lightAngle: 45,
-    glassColor: Color(0xD0292929),
+    glassColor: Color(0xD0494949),
     refractiveIndex: 1.3,
     saturation: 1,
     chromaticAberration: 0.002,
@@ -40,11 +40,11 @@ class ShowcaseGlassTheme {
 
   static LiquidGlassSettings get profileButtonTopBar => LiquidGlassSettings(
     blur: 8.0,
-    thickness: 40,
+    thickness: 25,
     ambientStrength: 0.5,
     lightIntensity: 0.1,
     lightAngle: 45,
-    glassColor: Color(0xD0292929),
+    glassColor: Color(0xD0494949),
     refractiveIndex: 1.3,
     saturation: 1,
     chromaticAberration: 0.002,

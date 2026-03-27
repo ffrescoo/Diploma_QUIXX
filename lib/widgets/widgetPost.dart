@@ -24,7 +24,7 @@ class QuixxPost extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double imageHeight = constraints.maxWidth * (4 / 3);
-        final double glassTop = imageHeight - 50;
+        final double glassTop = imageHeight - 40;
         final compactFormatter = NumberFormat.compact();
 
         return Stack(
@@ -33,7 +33,7 @@ class QuixxPost extends StatelessWidget {
             AspectRatio(
               aspectRatio: 3 / 4,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(20),
                 child: Image.network(
                   postImage,
                   fit: BoxFit.cover,
@@ -48,25 +48,25 @@ class QuixxPost extends StatelessWidget {
                 GlassContainer(
                   settings: ShowcaseGlassTheme.profileButtonDark,
                   width: double.infinity,
-                  shape: const LiquidRoundedSuperellipse(borderRadius: 25),
+                  shape: const LiquidRoundedSuperellipse(borderRadius: 20),
                   child: Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(7),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          spacing: 5,
+                          spacing: 7,
                           children: [
                             CircleAvatar(
-                              radius: 15,
+                              radius: 13,
                               backgroundImage: NetworkImage(userImage),
                             ),
                             Expanded(
                               child: Text(
                                 username,
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -76,22 +76,22 @@ class QuixxPost extends StatelessWidget {
                               child: GlassButton.custom(
                                 settings: ShowcaseGlassTheme.profileButtonWhite,
                                 width: double.infinity,
-                                height: 30,
-                                shape: const LiquidRoundedSuperellipse(borderRadius: 15),
+                                height: 26,
+                                shape: const LiquidRoundedSuperellipse(borderRadius: 13),
                                 onTap: () {},
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7),
                                   child: Row(
                                     spacing: 5,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const ImageIcon(
                                         AssetImage('assets/images/like.png'),
-                                        size: 18,
+                                        size: 15,
                                       ),
                                       Text(
                                         compactFormatter.format(likes),
-                                        style: const TextStyle(fontSize: 16, color: Colors.white),
+                                        style: const TextStyle(fontSize: 15, color: Colors.white),
                                       ),
                                     ],
                                   ),
@@ -102,22 +102,22 @@ class QuixxPost extends StatelessWidget {
                               child: GlassButton.custom(
                                 settings: ShowcaseGlassTheme.profileButtonWhite,
                                 width: double.infinity,
-                                height: 30,
-                                shape: const LiquidRoundedSuperellipse(borderRadius: 15),
+                                height: 26,
+                                shape: const LiquidRoundedSuperellipse(borderRadius: 13),
                                 onTap: () {},
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
                                   child: Row(
                                     spacing: 5,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const ImageIcon(
                                         AssetImage('assets/images/follow.png'),
-                                        size: 18,
+                                        size: 15,
                                       ),
                                       const Text(
                                         'Follow',
-                                        style: TextStyle(fontSize: 16, color: Colors.white),
+                                        style: TextStyle(fontSize: 15, color: Colors.white),
                                       ),
                                     ],
                                   ),
@@ -126,7 +126,7 @@ class QuixxPost extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 7),
                         Text(
                           description,
                           style: const TextStyle(color: Colors.white70, fontSize: 14),
