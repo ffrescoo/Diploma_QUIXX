@@ -8,24 +8,51 @@ class AppBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final List<MeshGradientPoint> points = [
+      MeshGradientPoint(
+        position: const Offset(0.0, 0.0),
+        color: const Color(0x7C06002B),
+      ),
+
+      MeshGradientPoint(
+        position: const Offset(0.9, 0.1),
+        color: const Color(0xFF080025),
+      ),
+
+      MeshGradientPoint(
+        position: const Offset(0.3, 0.3),
+        color: const Color(0xFF000000)
+      ),
+
+      MeshGradientPoint(
+        position: const Offset(0.5, 0.5),
+        color: const Color(0xFFC1C1C1),
+      ),
+
+      MeshGradientPoint(
+        position: const Offset(0.5, 0.9),
+        color: const Color(0x7C07001E),
+      ),
+
+      MeshGradientPoint(
+        position: const Offset(0.2, 0.4),
+        color: const Color(0xFF000000)
+      ),
+    ];
+
+    final options = MeshGradientOptions(
+      blend: 4.0,
+      noiseIntensity: 0.3,
+    );
+
     return Stack(
       children: [
         Positioned.fill(
-          child: AnimatedMeshGradient(
-            colors: const [
-              Color(0xFFCCB3D1),
-              Color(0xFF4C4A6C),
-              Color(0xFF22052D),
-              Color(0xFF000000),
-            ],
-            seed: 120,
-            options: AnimatedMeshGradientOptions(
-              speed: 1,
-              frequency: 6,
-              amplitude: 15,
-              grain: 0.1,
-            ),
-          )
+          child: MeshGradient(
+            points: points,
+            options: options,
+          ),
         ),
         child,
       ],

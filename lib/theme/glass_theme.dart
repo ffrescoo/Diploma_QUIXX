@@ -2,29 +2,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
-
 class ShowcaseGlassTheme {
   ShowcaseGlassTheme._();
 
   static const double standardLightAngle = 0.25 * math.pi;
   static const double modalLightAngle = 130.0;
 
-  static LiquidGlassSettings get profileButton => LiquidGlassSettings(
-        blur: 8,
-        thickness: 40,
-        ambientStrength: 0.5,
-        lightIntensity: 0.7,
-        lightAngle: standardLightAngle,
-        glassColor: Colors.white12,
-      );
-
-  static LiquidGlassSettings get profileButtonBig => LiquidGlassSettings(
+  static LiquidGlassSettings get profileButtonWhite => LiquidGlassSettings(
     blur: 8,
     thickness: 10,
     ambientStrength: 0.9,
     lightIntensity: 0.9,
     lightAngle: standardLightAngle,
-    glassColor: Colors.white12,
+    glassColor: Color(0xA5616161),
   );
 
   static LiquidGlassSettings get profileButtonDark => LiquidGlassSettings(
@@ -33,9 +23,32 @@ class ShowcaseGlassTheme {
     ambientStrength: 0.9,
     lightIntensity: 0.9,
     lightAngle: modalLightAngle,
-    glassColor: Colors.black54,
+    glassColor: Color(0xA5000000),
   );
 
+  static LiquidGlassSettings get profileButtonBar => LiquidGlassSettings(
+    blur: 15.0,
+    thickness: 50,
+    ambientStrength: 0.5,
+    lightIntensity: 0.1,
+    lightAngle: 45,
+    glassColor: Color(0xD0292929),
+    refractiveIndex: 1.3,
+    saturation: 1,
+    chromaticAberration: 0.002,
+  );
+
+  static LiquidGlassSettings get profileButtonTopBar => LiquidGlassSettings(
+    blur: 8.0,
+    thickness: 40,
+    ambientStrength: 0.5,
+    lightIntensity: 0.1,
+    lightAngle: 45,
+    glassColor: Color(0xD0292929),
+    refractiveIndex: 1.3,
+    saturation: 1,
+    chromaticAberration: 0.002,
+  );
 
   static const GlassQuality standardQuality = GlassQuality.standard;
   static const GlassQuality premiumQuality = GlassQuality.premium;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:intl/intl.dart';
 import '../theme/glass_theme.dart';
 
 class QuixxPost extends StatelessWidget {
@@ -24,6 +25,7 @@ class QuixxPost extends StatelessWidget {
       builder: (context, constraints) {
         final double imageHeight = constraints.maxWidth * (4 / 3);
         final double glassTop = imageHeight - 50;
+        final compactFormatter = NumberFormat.compact();
 
         return Stack(
           clipBehavior: Clip.none,
@@ -72,20 +74,23 @@ class QuixxPost extends StatelessWidget {
                             ),
                             IntrinsicWidth(
                               child: GlassButton.custom(
-                                settings: ShowcaseGlassTheme.profileButtonBig,
+                                settings: ShowcaseGlassTheme.profileButtonWhite,
                                 width: double.infinity,
                                 height: 30,
-                                shape: const LiquidRoundedSuperellipse(borderRadius: 25),
+                                shape: const LiquidRoundedSuperellipse(borderRadius: 15),
                                 onTap: () {},
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
                                   child: Row(
-                                    spacing: 8,
+                                    spacing: 5,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.favorite_border, size: 20, color: Colors.white),
+                                      const ImageIcon(
+                                        AssetImage('assets/images/like.png'),
+                                        size: 18,
+                                      ),
                                       Text(
-                                        '$likes',
+                                        compactFormatter.format(likes),
                                         style: const TextStyle(fontSize: 16, color: Colors.white),
                                       ),
                                     ],
@@ -95,18 +100,21 @@ class QuixxPost extends StatelessWidget {
                             ),
                             IntrinsicWidth(
                               child: GlassButton.custom(
-                                settings: ShowcaseGlassTheme.profileButtonBig,
+                                settings: ShowcaseGlassTheme.profileButtonWhite,
                                 width: double.infinity,
                                 height: 30,
-                                shape: const LiquidRoundedSuperellipse(borderRadius: 25),
+                                shape: const LiquidRoundedSuperellipse(borderRadius: 15),
                                 onTap: () {},
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
                                   child: Row(
-                                    spacing: 8,
+                                    spacing: 5,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.person_add, size: 20, color: Colors.white),
+                                      const ImageIcon(
+                                        AssetImage('assets/images/follow.png'),
+                                        size: 18,
+                                      ),
                                       const Text(
                                         'Follow',
                                         style: TextStyle(fontSize: 16, color: Colors.white),
@@ -118,10 +126,10 @@ class QuixxPost extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
                         Text(
                           description,
-                          style: const TextStyle(color: Colors.white70, fontSize: 16),
+                          style: const TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                       ],
                     ),

@@ -179,7 +179,6 @@ class _GenderSegmentedState extends State<GenderSegmented> {
   Widget build(BuildContext context) {
     return GlassSegmentedControl(
       segments: genders,
-      glassSettings: ShowcaseGlassTheme.profileButton,
       selectedIndex: _selectedSegment,
       onSegmentSelected: (index) {
         setState(() {

@@ -2,47 +2,62 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../theme/glass_theme.dart';
+import '../navigation/appRouter.dart';
 
 class AppBottomBar extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const AppBottomBar({
-    super.key,
-    required this.navigationShell,
-  });
+  const AppBottomBar({super.key, required this.navigationShell});
+
+  static const List<GlassBottomBarTab> tabs = [
+    GlassBottomBarTab(
+      label: 'Home',
+      icon: ImageIcon(
+        AssetImage('assets/images/home.png'),
+        size: 20,
+      ),
+    ),
+    GlassBottomBarTab(
+      label: 'Stats',
+      icon: ImageIcon(
+        AssetImage('assets/images/graph.png'),
+        size: 20,
+      ),
+    ),
+    GlassBottomBarTab(
+      label: 'Workout',
+      icon: ImageIcon(
+        AssetImage('assets/images/dumbell.png'),
+        size: 20,
+      ),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final extraButton = GlassBottomBarExtraButton(
+      size: 60,
+      icon: ImageIcon(
+        AssetImage('assets/images/ai.png'),
+        size: 35,
+      ),
+      label: 'Profile',
+      onTap: () {
+        context.push(AppRouter.profile);
+      },
+    );
+
     return GlassBottomBar(
-      verticalPadding: 30,
+      barHeight: 60,
+      barBorderRadius: 35,
       horizontalPadding: 20,
+      verticalPadding: 20,
+      spacing: 10,
       indicatorColor: Colors.white24,
       quality: ShowcaseGlassTheme.premiumQuality,
-      glassSettings: ShowcaseGlassTheme.profileButton,
-      extraButton: GlassBottomBarExtraButton(
-
-        icon: Icon(Icons.interests_outlined),
-        label: 'Profile',
-        onTap: () {},
-      ),
-
-      tabs: [
-        GlassBottomBarTab(
-          label: 'Home',
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
-        ),
-        GlassBottomBarTab(
-          label: 'Stats',
-          icon: Icon(Icons.insert_chart_outlined),
-          activeIcon: Icon(Icons.insert_chart),
-        ),
-        GlassBottomBarTab(
-          label: 'Workout',
-          icon: Icon(Icons.fitness_center_outlined),
-          activeIcon: Icon(Icons.fitness_center),
-        ),
-      ],
+      glassSettings: ShowcaseGlassTheme.profileButtonBar,
+      extraButton: extraButton,
+      tabs: tabs,
       selectedIndex: navigationShell.currentIndex,
       onTabSelected: (index) {
         navigationShell.goBranch(
