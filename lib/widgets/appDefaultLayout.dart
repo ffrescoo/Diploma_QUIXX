@@ -6,8 +6,14 @@ import '../widgets/appBackground.dart';
 class AppDefaultLayout extends StatelessWidget {
   final Widget body;
   final Widget top;
+  final double topSpacing;
 
-  const AppDefaultLayout({super.key, required this.body, required this.top});
+  const AppDefaultLayout({
+    super.key,
+    required this.body,
+    required this.top,
+    this.topSpacing = 64,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,7 @@ class AppDefaultLayout extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const SizedBox(height: 64),
+                      SizedBox(height: topSpacing),
                       AdaptiveLiquidGlassLayer(
                         settings: ShowcaseGlassTheme.profileButtonDark,
                         quality: ShowcaseGlassTheme.standardQuality,
