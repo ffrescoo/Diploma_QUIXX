@@ -2,16 +2,16 @@
   {
     "title": "Volume",
     "unitType": "volume",
-    "values": [2800.0, 4200.0, 4533.0, 1700.0]
+    "values": [2800.0, 4200.0, 5533.0, 1700.0]
   },
   {
     "title": "Time",
     "unitType": "time",
-    "values": [7.6, 2.0, 6.2, 3.8]
+    "values": [75.6, 23.0, 46.2, 41.0]
   },
   {
     "title": "Reps",
     "unitType": "reps",
-    "values": [120.0, 250.0, 183.0, 200.0]
+    "values": [120.0, 274.0, 183.0, 620.0]
   }
 ]

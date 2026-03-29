@@ -9,13 +9,17 @@ class ChartData {
   final String unitType;
   final List<double> values;
 
-  ChartData({required this.title, required this.unitType, required this.values});
+  const ChartData({
+    required this.title,
+    required this.unitType,
+    required this.values,
+  });
 
   factory ChartData.fromJson(Map<String, dynamic> json) {
     return ChartData(
       title: json['title'],
       unitType: json['unitType'],
-      values: List<double>.from(json['values']),
+      values: (json['values'] as List).cast<double>(),
     );
   }
 }
@@ -27,12 +31,15 @@ class GlassChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final interval = _getNiceInterval(chartData.values);
-    final maxY = interval * 3.01;
+    final values = chartData.values;
+
+    final interval = _getNiceInterval(values);
+    final maxY = interval * 3.3;
 
     final labels = List.generate(
-        chartData.values.length,
-            (i) => '${i + 1}${_getOrdinalSuffix(i + 1)} week');
+      values.length,
+          (i) => '${i + 1}${_getOrdinalSuffix(i + 1)}w',
+    );
 
     return Expanded(
       child: GlassContainer(
@@ -40,48 +47,43 @@ class GlassChart extends StatelessWidget {
         width: double.infinity,
         shape: const LiquidRoundedSuperellipse(borderRadius: 20),
         child: _VolumeBarChartContent(
-            chartData: chartData, maxY: maxY, interval: interval, labels: labels),
+          chartData: chartData,
+          maxY: maxY,
+          interval: interval,
+          labels: labels,
+        ),
       ),
     );
   }
 
+  static const _suffixes = ['th', 'st', 'nd', 'rd'];
+
   String _getOrdinalSuffix(int number) {
     if (number >= 11 && number <= 13) return 'th';
-    switch (number % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
+    final mod = number % 10;
+    return (mod <= 3 && mod > 0) ? _suffixes[mod] : 'th';
   }
 
   double _getNiceInterval(List<double> values) {
     if (values.isEmpty) return 1.0;
-    double maxVal = values.reduce((a, b) => a > b ? a : b);
+
+    final maxVal = values.reduce(max);
     if (maxVal == 0) return 10.0;
 
-    double rawInterval = maxVal / 3;
-    double exponent = (log(rawInterval) / ln10).floorToDouble();
-    double magnitude = pow(10, exponent).toDouble();
-    double residual = rawInterval / magnitude;
+    final rawInterval = maxVal / 3;
+    final exponent = (log(rawInterval) / ln10).floorToDouble();
+    final magnitude = pow(10, exponent).toDouble();
+    final residual = rawInterval / magnitude;
 
-    double niceResidual;
-
-    if (residual <= 1.0) {
-      niceResidual = 1.0;
-    } else if (residual <= 2.0) {
-      niceResidual = 2.0;
-    } else if (residual <= 2.5) {
-      niceResidual = 2.5;
-    } else if (residual <= 3.0) {
-      niceResidual = 3.0;
-    } else if (residual <= 4.0) {
-      niceResidual = 4.0;
-    } else if (residual <= 5.0) {
-      niceResidual = 5.0;
-    } else {
-      niceResidual = 10.0;
-    }
+    final niceResidual = switch (residual) {
+      <= 1.0 => 1.0,
+      <= 2.0 => 2.0,
+      <= 2.5 => 2.5,
+      <= 3.0 => 3.0,
+      <= 4.0 => 4.0,
+      <= 5.0 => 5.0,
+      _ => 10.0,
+    };
 
     return niceResidual * magnitude;
   }
@@ -93,14 +95,33 @@ class _VolumeBarChartContent extends StatelessWidget {
   final double interval;
   final List<String> labels;
 
-  const _VolumeBarChartContent(
-      {required this.chartData, required this.maxY, required this.interval, required this.labels});
+  const _VolumeBarChartContent({
+    required this.chartData,
+    required this.maxY,
+    required this.interval,
+    required this.labels,
+  });
 
   String _formatYLabel(double value) {
     if (value == 0) return '0';
-    if (chartData.unitType == 'volume') return '${(value / 1000).toStringAsFixed(0)}k kg';
-    if (chartData.unitType == 'time') return '${value.toStringAsFixed(1)}h';
-    return value.toStringAsFixed(0);
+
+    switch (chartData.unitType) {
+      case 'volume':
+        return '${(value / 1000).toStringAsFixed(0)}k kg';
+      case 'time':
+        return value % 1 == 0
+            ? '${value.toInt()}h'
+            : '${value.toStringAsFixed(1)}h';
+      default:
+        return value % 1 == 0
+            ? value.toInt().toString()
+            : value.toStringAsFixed(1);
+    }
+  }
+
+  bool _isMainGrid(double value) {
+    final remainder = (value % interval);
+    return remainder.abs() < 0.01 && value <= interval * 3.01;
   }
 
   @override
@@ -110,101 +131,132 @@ class _VolumeBarChartContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            chartData.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+          Padding(
+            padding: const EdgeInsets.only(left: 35),
+            child: Text(
+              chartData.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Expanded(
-            child: BarChart(
-              BarChartData(
-                maxY: maxY,
-                alignment: BarChartAlignment.spaceEvenly,
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 20,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= labels.length) return const SizedBox();
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            labels[value.toInt()],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 8,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: interval,
-                      reservedSize: 30,
-                      getTitlesWidget: (value, meta) {
-                        if (value > interval * 3.1) return const SizedBox();
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final count = chartData.values.length;
+                const spacing = 18.0;
 
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Text(
-                            _formatYLabel(value),
-                            maxLines: 1,
-                            softWrap: false,
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 8,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: interval,
-                  // Перевірка, щоб малювати тільки 4 лінії
-                  checkToShowHorizontalLine: (value) => value <= interval * 3.1,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    strokeWidth: 1,
-                  ),
-                ),
-                borderData: FlBorderData(
-                  show: true,
-                  border: Border(
-                    left: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
-                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
-                  ),
-                ),
-                barGroups: List.generate(chartData.values.length, (i) {
-                  return BarChartGroupData(
-                    x: i,
-                    barRods: [
-                      BarChartRodData(
-                        toY: chartData.values[i],
-                        color: const Color(0xFFD1CFD7),
-                        width: 25,
-                        borderRadius: BorderRadius.zero,
+                final availableWidth =
+                    constraints.maxWidth - 12;
+
+                final rodWidth = max<double>(
+                  2.0,
+                  (availableWidth - spacing * (count + 1)) / count,
+                );
+
+                return BarChart(
+                  BarChartData(
+                    maxY: maxY,
+                    alignment: BarChartAlignment.spaceEvenly,
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 20,
+                          getTitlesWidget: (value, meta) {
+                            final index = value.toInt();
+                            if (index >= labels.length) {
+                              return const SizedBox();
+                            }
+
+                            return SideTitleWidget(
+                              axisSide: meta.axisSide,
+                              child: Text(
+                                labels[index],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 8,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ],
-                  );
-                }),
-              ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: interval,
+                          reservedSize: 35,
+                          getTitlesWidget: (value, meta) {
+                            if (!_isMainGrid(value)) {
+                              return const SizedBox();
+                            }
+
+                            return SideTitleWidget(
+                              axisSide: meta.axisSide,
+                              child: Text(
+                                _formatYLabel(value),
+                                maxLines: 1,
+                                softWrap: false,
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 8,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      rightTitles:
+                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles:
+                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    ),
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: interval,
+                      checkToShowHorizontalLine: _isMainGrid,
+                      getDrawingHorizontalLine: (_) => FlLine(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        strokeWidth: 1,
+                      ),
+                    ),
+                    borderData: FlBorderData(
+                      show: true,
+                      border: Border(
+                        left: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                        bottom: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    barGroups: List.generate(chartData.values.length, (i) {
+                      return BarChartGroupData(
+                        x: i,
+                        barRods: [
+                          BarChartRodData(
+                            toY: chartData.values[i],
+                            color: const Color(0xFFD1CFD7),
+                            width: rodWidth,
+                            borderRadius: BorderRadius.zero,
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                );
+              },
             ),
           ),
         ],
