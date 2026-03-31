@@ -11,8 +11,8 @@ class ShowcaseGlassTheme {
   static LiquidGlassSettings get profileButtonWhite => LiquidGlassSettings(
     blur: 8,
     thickness: 10,
-    ambientStrength: 0.9,
-    lightIntensity: 0.9,
+    ambientStrength: 1,
+    lightIntensity: 0.2,
     lightAngle: standardLightAngle,
     glassColor: Color(0xA5616161),
   );
@@ -20,9 +20,9 @@ class ShowcaseGlassTheme {
   static LiquidGlassSettings get profileButtonWhiteLight => LiquidGlassSettings(
     blur: 8,
     thickness: 10,
-    ambientStrength: 0.9,
-    lightIntensity: 0.9,
-    lightAngle: standardLightAngle,
+    ambientStrength: 1,
+    lightIntensity: 0.2,
+    lightAngle: modalLightAngle,
     glassColor: Color(0xA53C3C3C),
   );
 
@@ -41,7 +41,7 @@ class ShowcaseGlassTheme {
     ambientStrength: 0.2,
     lightIntensity: 0.2,
     lightAngle: modalLightAngle,
-    glassColor: Color(0xCB000000),
+    glassColor: Color(0xA5000000),
   );
 
   static LiquidGlassSettings get profileButtonBar => LiquidGlassSettings(

@@ -37,7 +37,7 @@ class AppDefaultLayout extends StatelessWidget {
                     children: [
                       SizedBox(height: topSpacing),
                       AdaptiveLiquidGlassLayer(
-                        settings: ShowcaseGlassTheme.profileButtonDark,
+                        settings: ShowcaseGlassTheme.profilePanelDark,
                         quality: ShowcaseGlassTheme.standardQuality,
                         child: body,
                       ),
