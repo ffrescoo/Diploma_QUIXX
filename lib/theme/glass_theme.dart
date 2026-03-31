@@ -17,6 +17,15 @@ class ShowcaseGlassTheme {
     glassColor: Color(0xA5616161),
   );
 
+  static LiquidGlassSettings get profileButtonWhiteLight => LiquidGlassSettings(
+    blur: 8,
+    thickness: 10,
+    ambientStrength: 0.9,
+    lightIntensity: 0.9,
+    lightAngle: standardLightAngle,
+    glassColor: Color(0xA53C3C3C),
+  );
+
   static LiquidGlassSettings get profileButtonDark => LiquidGlassSettings(
     blur: 8,
     thickness: 10,
