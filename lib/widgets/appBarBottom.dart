@@ -43,7 +43,7 @@ class AppBottomBar extends StatelessWidget {
       ),
       label: 'Profile',
       onTap: () {
-        context.push(AppRouter.profile);
+        context.push(AppRouter.loginPage);
       },
     );
 

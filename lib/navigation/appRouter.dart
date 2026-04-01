@@ -8,6 +8,7 @@ import '../pages/tabWorkout.dart';
 import '../pages/pageEditProfile.dart';
 import '../pages/pageSettings.dart';
 import '../pages/pageNotifications.dart';
+import '../pages/page_login.dart';
 
 class AppRouter {
   AppRouter._();
@@ -19,6 +20,7 @@ class AppRouter {
   static const String editProfile = '/editProfile';
   static const String settingsPage = '/settingsPage';
   static const String notificationsPage = '/notifications';
+  static const String loginPage = '/login';
 
   static final GoRouter config = GoRouter(
     initialLocation: home,
@@ -29,6 +31,7 @@ class AppRouter {
           return LayoutPage(navigationShell: navigationShell);
         },
         branches: [
+
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -82,6 +85,13 @@ class AppRouter {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationsPage(),
       ),
+
+      GoRoute(
+        path: loginPage,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LoginPage(),
+      ),
+
     ],
   );
 }
