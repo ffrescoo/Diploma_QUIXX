@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'navigation/appRouter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Инициализация Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Инициализация LiquidGlass
   await LiquidGlassWidgets.initialize();
+
   runApp(const QuixxApp());
 }
 
@@ -37,7 +47,6 @@ class QuixxApp extends StatelessWidget {
         colorSchemeSeed: const Color(0xFF28004A),
         fontFamily: 'SF Pro Display',
       ),
-
       builder: (context, child) {
         return GlassTheme(
           data: glassTheme,

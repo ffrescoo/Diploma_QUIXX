@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../pages/layoutForTabs.dart';
 import '../pages/pageProfile.dart';
 import '../pages/tabHome.dart';
@@ -12,7 +13,9 @@ import '../pages/page_login.dart';
 
 class AppRouter {
   AppRouter._();
+
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static const String home = '/home';
   static const String stats = '/stats';
   static const String workout = '/workout';
@@ -25,13 +28,24 @@ class AppRouter {
   static final GoRouter config = GoRouter(
     initialLocation: home,
     navigatorKey: _rootNavigatorKey,
+
+    redirect: (context, state) {
+      final bool loggedIn = FirebaseAuth.instance.currentUser != null;
+      final bool isLoggingIn = state.matchedLocation == loginPage;
+
+      if (!loggedIn && !isLoggingIn) return loginPage;
+
+      if (loggedIn && isLoggingIn) return home;
+
+      return null;
+    },
+
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return LayoutPage(navigationShell: navigationShell);
         },
         branches: [
-
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -91,7 +105,6 @@ class AppRouter {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const LoginPage(),
       ),
-
     ],
   );
 }

@@ -42,9 +42,7 @@ class AppBottomBar extends StatelessWidget {
         size: 35,
       ),
       label: 'Profile',
-      onTap: () {
-        context.push(AppRouter.loginPage);
-      },
+      onTap: () {},
     );
 
     return GlassBottomBar(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../widgets/appDefaultLayout.dart';
 import '../widgets/appBarTop.dart';
+import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -187,7 +189,12 @@ class _SettingsPageState extends State<SettingsPage> {
             shape: const LiquidRoundedSuperellipse(
               borderRadius: 30,
             ),
-            onTap: () {},
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
             child: const Text(
               'Logout',
               style: TextStyle(
