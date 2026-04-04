@@ -4,6 +4,8 @@ import '../widgets/appDefaultLayout.dart';
 import '../widgets/appBarTop.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/user_session.dart';
+import '../services/local_storage.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -191,6 +193,11 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
+
+              await LocalStorage.clear();
+
+              UserSession.nickname = "Quixx User";
+
               if (context.mounted) {
                 context.go('/login');
               }

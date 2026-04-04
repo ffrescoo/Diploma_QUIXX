@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:firebase_core/firebase_core.dart';
+import '../services/user_session.dart';
 import 'firebase_options.dart';
 import 'navigation/appRouter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Инициализация Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await UserSession.init();
 
-  // Инициализация LiquidGlass
   await LiquidGlassWidgets.initialize();
 
   runApp(const QuixxApp());

@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/glass_theme.dart';
+import '../services/local_storage.dart';
+import '../services/user_session.dart';
 
 class AuthConstants {
   static const loginColors = [
@@ -222,7 +224,8 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildFooterToggle() {
     return Text.rich(
       TextSpan(
-        text: _isLogin ? "Don't have an account? " : "Already have an account? ",
+        text:
+        _isLogin ? "Don't have an account? " : "Already have an account? ",
         style: const TextStyle(color: Colors.white70, fontSize: 14),
         children: [
           TextSpan(
@@ -305,6 +308,8 @@ class _LoginPageState extends State<LoginPage> {
         'createdAt': FieldValue.serverTimestamp(),
       }).timeout(const Duration(seconds: 10));
 
+      await LocalStorage.saveNickname(username);
+
       await userCredential.user!.sendEmailVerification();
 
       if (mounted) {
@@ -343,6 +348,25 @@ class _LoginPageState extends State<LoginPage> {
         await FirebaseAuth.instance.signOut();
         return;
       }
+
+      // --- ПОЛУЧЕНИЕ И СОХРАНЕНИЕ НИКНЕЙМА ---
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final String? usernameFromDb = userDoc.data()?['username'];
+        if (usernameFromDb != null) {
+          // 1. Сохраняем в файл (shared_preferences)
+          await LocalStorage.saveNickname(usernameFromDb);
+
+          // 2. Обновляем глобальную переменную (UserSession)
+          // Теперь на всех экранах ник обновится мгновенно
+          UserSession.nickname = usernameFromDb;
+        }
+      }
+      // ---------------------------------------
 
       if (mounted) {
         setState(() => _isLoading = false);

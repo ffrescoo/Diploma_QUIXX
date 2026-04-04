@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../navigation/appRouter.dart';
 import '../widgets/appDefaultLayout.dart';
 import '../widgets/widgetPost.dart';
+import '../services/user_session.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -60,9 +61,9 @@ class HomeTab extends StatelessWidget {
                       width: 26,
                       height: 26,
                     ),
-                    const Text(
-                      'UserName',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                     Text(
+                       UserSession.nickname,
+                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ],
                 ),

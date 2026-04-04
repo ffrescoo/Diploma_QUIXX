@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../navigation/appRouter.dart';
 import '../widgets/appDefaultLayout.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../services/user_session.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -121,8 +122,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "@NoNameUser",
+                  Text(
+                    UserSession.nickname,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
