@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:mesh_gradient/mesh_gradient.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,18 +12,6 @@ import '../services/local_storage.dart';
 import '../services/user_session.dart';
 
 class AuthConstants {
-  static const loginColors = [
-    Color(0xFF200050),
-    Color(0x67FFFFFF),
-    Color(0xFF000000),
-    Color(0xFF06001B),
-  ];
-  static const registerColors = [
-    Color(0xFF0051A1),
-    Color(0x67FFFFFF),
-    Color(0xFF000000),
-    Color(0xFF002751),
-  ];
   static const borderRadius = LiquidRoundedSuperellipse(borderRadius: 15);
   static const containerShape = LiquidRoundedSuperellipse(borderRadius: 20);
 }
@@ -66,18 +55,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildBackground() {
-    return Positioned.fill(
-      child: AnimatedMeshGradient(
-        colors: _isLogin
-            ? AuthConstants.loginColors
-            : AuthConstants.registerColors,
-        options: AnimatedMeshGradientOptions(
-          frequency: 7,
-          speed: 0.5,
-          amplitude: 50.0,
-          grain: 0.3,
-        ),
-      ),
+    return const Positioned.fill(
+      child: ShaderBackground(),
     );
   }
 
@@ -90,9 +69,9 @@ class _LoginPageState extends State<LoginPage> {
         ),
         child: GlassContainer(
           margin: const EdgeInsets.symmetric(horizontal: 20),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 30, bottom: 20,),
           shape: AuthConstants.containerShape,
-          settings: ShowcaseGlassTheme.profilePanelDark,
+          settings: ShowcaseGlassTheme.profilePanelDarkLogin,
           width: double.infinity,
           child: AnimatedSize(
             duration: const Duration(milliseconds: 250),
@@ -110,6 +89,18 @@ class _LoginPageState extends State<LoginPage> {
                     ..._buildFields(),
                     _buildSubmitButton(),
                     _buildFooterToggle(),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Secured by ', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500),),
+                            Image.asset('assets/images/firebase.png', width: 12, height: 12,),
+                            SizedBox(width: 2),
+                            Text('Firebase', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500),),
+                          ],
+                        ),
+                    )
                   ],
                 ),
               ),
@@ -349,7 +340,6 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      // --- ПОЛУЧЕНИЕ И СОХРАНЕНИЕ НИКНЕЙМА ---
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
@@ -358,11 +348,7 @@ class _LoginPageState extends State<LoginPage> {
       if (userDoc.exists) {
         final String? usernameFromDb = userDoc.data()?['username'];
         if (usernameFromDb != null) {
-          // 1. Сохраняем в файл (shared_preferences)
           await LocalStorage.saveNickname(usernameFromDb);
-
-          // 2. Обновляем глобальную переменную (UserSession)
-          // Теперь на всех экранах ник обновится мгновенно
           UserSession.nickname = usernameFromDb;
         }
       }
@@ -427,4 +413,81 @@ class _LoginPageState extends State<LoginPage> {
       SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
+}
+
+class ShaderBackground extends StatefulWidget {
+  const ShaderBackground({super.key});
+
+  @override
+  State<ShaderBackground> createState() => _ShaderBackgroundState();
+}
+
+class _ShaderBackgroundState extends State<ShaderBackground> with SingleTickerProviderStateMixin {
+  FragmentShader? shader;
+  late Ticker _ticker;
+  late Stopwatch _stopwatch;
+  double _elapsedTime = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _stopwatch = Stopwatch()..start();
+
+    _ticker = createTicker((Duration elapsed) {
+      setState(() {
+        _elapsedTime = _stopwatch.elapsedMilliseconds / 1000.0;
+      });
+    });
+
+    _ticker.start();
+    _loadShader();
+  }
+
+  Future<void> _loadShader() async {
+    final program = await FragmentProgram.fromAsset('shaders/background.frag');
+    setState(() {
+      shader = program.fragmentShader();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _stopwatch.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (shader == null) return Container(color: Colors.black);
+
+    return CustomPaint(
+      painter: ShaderPainter(
+        shader: shader!,
+        time: _elapsedTime,
+      ),
+    );
+  }
+}
+
+class ShaderPainter extends CustomPainter {
+  final FragmentShader shader;
+  final double time;
+
+  ShaderPainter({required this.shader, required this.time});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    shader.setFloat(0, time);
+    shader.setFloat(1, size.width);
+    shader.setFloat(2, size.height);
+
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..shader = shader,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant ShaderPainter oldDelegate) => true;
 }
