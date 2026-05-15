@@ -18,106 +18,186 @@ class WorkoutTab extends StatelessWidget {
       'Deadlift',
       'Pull-ups',
       'Bicep Curls',
-      'Leg Press'
+      'Leg Press',
+      '',
+      '',
+
     ];
 
     // Список для збереження вибраних користувачем вправ
     final List<String> selectedExercises = [];
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Дозволяє bottom sheet відкриватися на більшу висоту та адаптуватися під клавіатуру
+      backgroundColor: const Color(0xFF1E1B24), // Твоя базова темна палітра
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: const Color(0xFF1E1B24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Text('Create New Program', style: TextStyle(color: Colors.white)),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    TextField(
-                      controller: controller,
-                      autofocus: true,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        hintText: 'Enter program name (e.g. Legs Day)',
-                        hintStyle: TextStyle(color: Colors.white54),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFF6900FF)),
-                        ),
+          builder: (context, setBottomSheetState) {
+            return Padding(
+              // Динамічний відступ знизу, щоб клавіатура не перекривала поле введення
+              padding: EdgeInsets.only(
+                top: 16,
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Індикатор свайпу (Кастомний Handlebar)
+                  Center(
+                    child: Container(
+                      width: 45,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom:15),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    // Використовуємо класичний SizedBox замість spacing, щоб уникнути помилок версій Flutter
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Select Exercises:',
-                      style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Flexible(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: availableExercises.length,
-                        itemBuilder: (context, index) {
-                          final exercise = availableExercises[index];
-                          final isSelected = selectedExercises.contains(exercise);
+                  ),
 
-                          return CheckboxListTile(
-                            title: Text(exercise, style: const TextStyle(color: Colors.white)),
-                            value: isSelected,
-                            activeColor: const Color(0xFF6900FF),
-                            checkColor: Colors.white,
-                            //controlType: ListTileControlType.leading,
-                            contentPadding: EdgeInsets.zero,
-                            onChanged: (bool? value) {
-                              setDialogState(() {
-                                if (value == true) {
+                  // Верхня панель: Назва екрану + Кнопка створення
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Create New Program',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.check_circle, color: Color(0xFF6900FF), size: 30),
+                        onPressed: () {
+                          if (controller.text.trim().isNotEmpty) {
+                            dbService.addWorkoutProgram(
+                              controller.text.trim(),
+                              selectedExercises,
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Місце для назви програми тренування
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      hintText: 'Enter program name (e.g. Legs Day)',
+                      hintStyle: TextStyle(color: Colors.white54),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white24),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF6900FF)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+
+                  const Text(
+                    'Select Exercises:',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Скрол меню з вправами на вибір
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true, // Дозволяє списку займати тільки необхідний простір
+                      itemCount: availableExercises.length,
+                      itemBuilder: (context, index) {
+                        final exercise = availableExercises[index];
+                        final isSelected = selectedExercises.contains(exercise);
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.04), // Легкий фон під кожну вправу
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+
+                            // Аватар з лівого боку
+                            leading: CircleAvatar(
+                              backgroundColor: const Color(0xFF6900FF).withOpacity(0.15),
+                              child: const Icon(
+                                Icons.fitness_center, // Іконка гантелі для візуалу аватара
+                                color: Color(0xFF6900FF),
+                              ),
+                            ),
+
+                            // Назва вправи по центру
+                            title: Text(
+                              exercise,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+
+                            // Чекбокс з правого боку
+                            trailing: Checkbox(
+                              value: isSelected,
+                              activeColor: const Color(0xFF6900FF),
+                              checkColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              onChanged: (bool? value) {
+                                setBottomSheetState(() {
+                                  if (value == true) {
+                                    selectedExercises.add(exercise);
+                                  } else {
+                                    selectedExercises.remove(exercise);
+                                  }
+                                });
+                              },
+                            ),
+
+                            // Дозволяємо вибирати рядок тапом у будь-яке місце, а не тільки по чекбоксу
+                            onTap: () {
+                              setBottomSheetState(() {
+                                if (!isSelected) {
                                   selectedExercises.add(exercise);
                                 } else {
                                   selectedExercises.remove(exercise);
                                 }
                               });
                             },
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (controller.text.trim().isNotEmpty) {
-                      // Тепер типи методів у сервісі та діалозі повністю збігаються (передаємо 2 аргументи)
-                      dbService.addWorkoutProgram(
-                        controller.text.trim(),
-                        selectedExercises,
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text(
-                    'Create',
-                    style: TextStyle(color: Color(0xFF6900FF), fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         );
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final dbService = DatabaseService();
