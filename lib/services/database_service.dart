@@ -45,4 +45,17 @@ class DatabaseService {
       });
     }
   }
+  // Отримання потоку вправ для конкретної програми тренувань
+  Stream<QuerySnapshot> getProgramExercises(String programId) {
+    if (uid.isEmpty) return const Stream.empty();
+
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('programs')
+        .doc(programId)
+        .collection('exercises')
+        .orderBy('order', descending: false) // Сортуємо вправи за їхнім порядком
+        .snapshots();
+  }
 }

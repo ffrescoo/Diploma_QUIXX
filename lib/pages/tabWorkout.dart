@@ -4,6 +4,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../theme/glass_theme.dart';
 import '../services/database_service.dart';
 import '../models/workout_program.dart';
+import 'pageWorkoutSession.dart';
 
 class WorkoutTab extends StatelessWidget {
   const WorkoutTab({super.key});
@@ -350,7 +351,11 @@ class WorkoutTab extends StatelessWidget {
                       // Рендеримо список програм, отриманих з Firestore
                       return Column(
                         spacing: 10,
-                        children: programs.map((p) => programsSection(title: p.title)).toList(),
+                        children: programs.map((p) => programsSection(
+                          context: context,
+                          id: p.id,
+                          title: p.title,
+                        )).toList(),
                       );
                     },
                   ),
@@ -401,7 +406,7 @@ class WorkoutTab extends StatelessWidget {
     );
   }
 
-  Widget programsSection({required String title}) {
+  Widget programsSection({required BuildContext context, required String id, required String title}) {
     return GlassContainer(
       width: double.infinity,
       shape: const LiquidRoundedSuperellipse(borderRadius: 12),
@@ -436,7 +441,17 @@ class WorkoutTab extends StatelessWidget {
               height: 45,
               settings: ShowcaseGlassTheme.profileButtonWhite,
               shape: const LiquidRoundedSuperellipse(borderRadius: 12),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WorkoutSessionPage(
+                      programId: id,
+                      programTitle: title,
+                    ),
+                  ),
+                );
+              },
               child: const Text(
                 'Start program',
                 style: TextStyle(
