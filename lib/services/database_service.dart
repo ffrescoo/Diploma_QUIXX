@@ -58,4 +58,42 @@ class DatabaseService {
         .orderBy('order', descending: false) // Сортуємо вправи за їхнім порядком
         .snapshots();
   }
+  Future<void> updateWorkoutProgram(String programId, String newTitle) async {
+    if (uid.isEmpty) return;
+
+    await _db
+        .collection('users')
+        .doc(uid)
+        .collection('programs')
+        .doc(programId)
+        .update({
+      'title': newTitle,
+    });
+  }
+  Future<void> deleteWorkoutProgram(String programId) async {
+    if (uid.isEmpty) return;
+
+    final programRef = _db
+        .collection('users')
+        .doc(uid)
+        .collection('programs')
+        .doc(programId);
+
+    // Спочатку отримуємо всі вправи з підколекції
+    final exercisesSnapshot = await programRef.collection('exercises').get();
+
+    // Створюємо пакет (WriteBatch) для видалення всього за один запит
+    final batch = _db.batch();
+
+    // Додаємо вправи до пакету на видалення
+    for (var doc in exercisesSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    // Додаємо саму програму до пакету
+    batch.delete(programRef);
+
+    // Виконуємо пакет
+    await batch.commit();
+  }
 }

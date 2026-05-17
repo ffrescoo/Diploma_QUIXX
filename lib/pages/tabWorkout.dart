@@ -199,6 +199,75 @@ class WorkoutTab extends StatelessWidget {
     );
   }
 
+  void _showEditProgramDialog(BuildContext context, DatabaseService dbService, String id, String currentTitle) {
+    final controller = TextEditingController(text: currentTitle);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1B24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Edit Program Name', style: TextStyle(color: Colors.white)),
+          content: TextField(
+            controller: controller,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'Enter new name',
+              hintStyle: TextStyle(color: Colors.white54),
+              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (controller.text.trim().isNotEmpty) {
+                  await dbService.updateWorkoutProgram(id, controller.text.trim());
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Save', style: TextStyle(color: Color(0xFF6900FF), fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, DatabaseService dbService, String id, String title) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1B24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Delete Program', style: TextStyle(color: Colors.white)),
+          content: Text(
+            'Are you sure you want to delete "$title"? This action cannot be undone.',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            TextButton(
+              onPressed: () async {
+                await dbService.deleteWorkoutProgram(id);
+                Navigator.pop(context);
+              },
+              child: const Text('Delete', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final dbService = DatabaseService();
@@ -353,6 +422,7 @@ class WorkoutTab extends StatelessWidget {
                         spacing: 10,
                         children: programs.map((p) => programsSection(
                           context: context,
+                          dbService: dbService,
                           id: p.id,
                           title: p.title,
                         )).toList(),
@@ -406,12 +476,17 @@ class WorkoutTab extends StatelessWidget {
     );
   }
 
-  Widget programsSection({required BuildContext context, required String id, required String title}) {
-    return GlassContainer(
-      width: double.infinity,
+  Widget programsSection({
+    required BuildContext context,
+    required DatabaseService dbService,
+    required String id,
+    required String title
+  }) {
+    return GlassContainer( //
+      width: double.infinity, //
       shape: const LiquidRoundedSuperellipse(borderRadius: 12),
       settings: ShowcaseGlassTheme.profileButtonWhiteLight,
-      child: Padding(
+      child: Padding( //
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,21 +496,50 @@ class WorkoutTab extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 20, fontWeight: FontWeight.bold), //
                 ),
                 const Spacer(),
-                ImageIcon(
-                  AssetImage('assets/images/more.png'),
-                  size: 20,
-                  color: Colors.white,
+
+
+                PopupMenuButton<String>(
+                  color: const Color(0xFF1E1B24),
+                  icon: const ImageIcon(
+                    AssetImage('assets/images/more.png'),
+                    size: 20, //
+                    color: Colors.white,
+                  ),
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      _showEditProgramDialog(context, dbService, id, title);
+                    } else if (value == 'delete') {
+                      _showDeleteConfirmationDialog(context, dbService, id, title);
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    const PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, color: Colors.white70, size: 18),
+                          SizedBox(width: 8),
+                          Text('Rename', style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, color: Colors.redAccent, size: 18),
+                          SizedBox(width: 8),
+                          Text('Delete', style: TextStyle(color: Colors.redAccent)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-
             GlassButton.custom(
               width: double.infinity,
               height: 45,
@@ -454,11 +558,7 @@ class WorkoutTab extends StatelessWidget {
               },
               child: const Text(
                 'Start program',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500), //
               ),
             ),
           ],
