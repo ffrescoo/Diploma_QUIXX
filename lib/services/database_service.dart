@@ -22,9 +22,8 @@ class DatabaseService {
         .toList());
   }
 
-  // Метод для додавання нової програми
-  // Оновлений метод для додавання програми разом із обраними вправами
-  Future<void> addWorkoutProgram(String title, List<String> selectedExercises) async {
+  // Метод для додавання нової програми разом із обраними вправами та їхніми параметрами sets/reps
+  Future<void> addWorkoutProgram(String title, Map<String, Map<String, int>> exercisesData) async {
     if (uid.isEmpty) return;
 
     // 1. Створюємо головний документ програми всередині користувача
@@ -37,12 +36,16 @@ class DatabaseService {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
+    int index = 1;
     // 2. Записуємо кожну обрану вправу у вкладену підколекцію exercises цієї програми
-    for (int i = 0; i < selectedExercises.length; i++) {
+    for (var entry in exercisesData.entries) {
       await programRef.collection('exercises').add({
-        'name': selectedExercises[i],
-        'order': i + 1, // Порядковий номер вправи у списку
+        'name': entry.key,
+        'sets': entry.value['sets'] ?? 4, // Записуємо введені підходи (або 4 за дефолтом)
+        'reps': entry.value['reps'] ?? 10, // Записуємо введені повторення (або 10 за дефолтом)
+        'order': index, // Порядковий номер вправи у списку
       });
+      index++;
     }
   }
   // Отримання потоку вправ для конкретної програми тренувань

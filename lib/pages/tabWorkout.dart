@@ -12,7 +12,7 @@ class WorkoutTab extends StatelessWidget {
   void _showCreateProgramDialog(BuildContext context, DatabaseService dbService) {
     final controller = TextEditingController();
 
-    // Глобальний довідник вправ для вибору
+    // Глобальний довідник вправ для вибору (прибрали порожні рядки)
     final List<String> availableExercises = [
       'Bench Press',
       'Squats',
@@ -20,13 +20,10 @@ class WorkoutTab extends StatelessWidget {
       'Pull-ups',
       'Bicep Curls',
       'Leg Press',
-      '',
-      '',
-
     ];
 
-    // Список для збереження вибраних користувачем вправ
-    final List<String> selectedExercises = [];
+    // Нова структура: { 'Назва вправи': { 'sets': 4, 'reps': 10 } }
+    final Map<String, Map<String, int>> selectedExercisesData = {};
 
     showModalBottomSheet(
       context: context,
@@ -81,7 +78,7 @@ class WorkoutTab extends StatelessWidget {
                           if (controller.text.trim().isNotEmpty) {
                             dbService.addWorkoutProgram(
                               controller.text.trim(),
-                              selectedExercises,
+                              selectedExercisesData, // Передаємо мапу з sets та reps
                             );
                             Navigator.pop(context);
                           }
@@ -119,72 +116,120 @@ class WorkoutTab extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // Скрол меню з вправами на вибір
+                  // Скрол меню з вправами на вибір та налаштуванням підходів/повторень
                   Flexible(
                     child: ListView.builder(
-                      shrinkWrap: true, // Дозволяє списку займати тільки необхідний простір
+                      shrinkWrap: true,
                       itemCount: availableExercises.length,
                       itemBuilder: (context, index) {
                         final exercise = availableExercises[index];
-                        final isSelected = selectedExercises.contains(exercise);
+                        final isSelected = selectedExercisesData.containsKey(exercise);
 
                         return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          margin: const EdgeInsets.symmetric(vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.04), // Легкий фон під кожну вправу
+                            color: Colors.white.withOpacity(0.04),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-
-                            // Аватар з лівого боку
-                            leading: CircleAvatar(
-                              backgroundColor: const Color(0xFF6900FF).withOpacity(0.15),
-                              child: const Icon(
-                                Icons.fitness_center, // Іконка гантелі для візуалу аватара
-                                color: Color(0xFF6900FF),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                                leading: CircleAvatar(
+                                  backgroundColor: const Color(0xFF6900FF).withOpacity(0.15),
+                                  child: const Icon(
+                                    Icons.fitness_center,
+                                    color: Color(0xFF6900FF),
+                                  ),
+                                ),
+                                title: Text(
+                                  exercise,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                trailing: Checkbox(
+                                  value: isSelected,
+                                  activeColor: const Color(0xFF6900FF),
+                                  checkColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  onChanged: (bool? value) {
+                                    setBottomSheetState(() {
+                                      if (value == true) {
+                                        // Задаємо дефолтні значення 4 підходи та 10 повторень при виборі
+                                        selectedExercisesData[exercise] = {'sets': 4, 'reps': 10};
+                                      } else {
+                                        selectedExercisesData.remove(exercise);
+                                      }
+                                    });
+                                  },
+                                ),
+                                onTap: () {
+                                  setBottomSheetState(() {
+                                    if (!isSelected) {
+                                      selectedExercisesData[exercise] = {'sets': 4, 'reps': 10};
+                                    } else {
+                                      selectedExercisesData.remove(exercise);
+                                    }
+                                  });
+                                },
                               ),
-                            ),
 
-                            // Назва вправи по центру
-                            title: Text(
-                              exercise,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-
-                            // Чекбокс з правого боку
-                            trailing: Checkbox(
-                              value: isSelected,
-                              activeColor: const Color(0xFF6900FF),
-                              checkColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              onChanged: (bool? value) {
-                                setBottomSheetState(() {
-                                  if (value == true) {
-                                    selectedExercises.add(exercise);
-                                  } else {
-                                    selectedExercises.remove(exercise);
-                                  }
-                                });
-                              },
-                            ),
-
-                            // Дозволяємо вибирати рядок тапом у будь-яке місце, а не тільки по чекбоксу
-                            onTap: () {
-                              setBottomSheetState(() {
-                                if (!isSelected) {
-                                  selectedExercises.add(exercise);
-                                } else {
-                                  selectedExercises.remove(exercise);
-                                }
-                              });
-                            },
+                              // Якщо вправа обрана — показуємо інпути для введення даних
+                              if (isSelected)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+                                  child: Row(
+                                    children: [
+                                      const Text('Sets:', style: TextStyle(color: Colors.white70)),
+                                      const SizedBox(width: 8),
+                                      SizedBox(
+                                        width: 45,
+                                        child: TextFormField(
+                                          initialValue: selectedExercisesData[exercise]?['sets'].toString(),
+                                          keyboardType: TextInputType.number,
+                                          style: const TextStyle(color: Colors.white),
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.symmetric(vertical: 4),
+                                            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+                                            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+                                          ),
+                                          onChanged: (val) {
+                                            final parsed = int.tryParse(val) ?? 4;
+                                            selectedExercisesData[exercise]?['sets'] = parsed;
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 30),
+                                      const Text('Reps:', style: TextStyle(color: Colors.white70)),
+                                      const SizedBox(width: 8),
+                                      SizedBox(
+                                        width: 45,
+                                        child: TextFormField(
+                                          initialValue: selectedExercisesData[exercise]?['reps'].toString(),
+                                          keyboardType: TextInputType.number,
+                                          style: const TextStyle(color: Colors.white),
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.symmetric(vertical: 4),
+                                            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+                                            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+                                          ),
+                                          onChanged: (val) {
+                                            final parsed = int.tryParse(val) ?? 10;
+                                            selectedExercisesData[exercise]?['reps'] = parsed;
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         );
                       },
