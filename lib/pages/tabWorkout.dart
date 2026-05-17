@@ -5,6 +5,7 @@ import '../theme/glass_theme.dart';
 import '../services/database_service.dart';
 import '../models/workout_program.dart';
 import 'pageWorkoutSession.dart';
+import '../services/workout_session_manager.dart';
 
 class WorkoutTab extends StatelessWidget {
   const WorkoutTab({super.key});
@@ -316,6 +317,7 @@ class WorkoutTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dbService = DatabaseService();
+    final sessionManager = WorkoutSessionManager();
     return AppDefaultLayout(
       body: Column(
         spacing: 15,
@@ -479,37 +481,110 @@ class WorkoutTab extends StatelessWidget {
             ),
           ),
 
-          GlassContainer(
-            width: double.infinity,
-            height: 80,
-            shape: const LiquidRoundedSuperellipse(borderRadius: 20),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-
-                children: [
-                  Text(
-                    'Progress',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+          ValueListenableBuilder<ActiveWorkoutProgress?>(
+            valueListenable: sessionManager.activeWorkout,
+            builder: (context, activeProgress, child) {
+              if (activeProgress == null) {
+                return GlassContainer(
+                  width: double.infinity,
+                  height: 80,
+                  shape: const LiquidRoundedSuperellipse(borderRadius: 20),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Progress',
+                          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'No training started',
+                          style: TextStyle(color: Colors.white54, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ),
+                );
+              }
 
-                  Text(
-                    'No training started',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+              final double progressPercent = activeProgress.totalSets > 0
+                  ? (activeProgress.completedSets / activeProgress.totalSets)
+                  : 0.0;
+
+              String twoDigits(int n) => n.toString().padLeft(2, '0');
+              final minutes = twoDigits(activeProgress.duration.inMinutes.remainder(60));
+              final seconds = twoDigits(activeProgress.duration.inSeconds.remainder(60));
+              final durationString = "${twoDigits(activeProgress.duration.inHours)}:$minutes:$seconds";
+
+              return GlassContainer(
+                width: double.infinity,
+                shape: const LiquidRoundedSuperellipse(borderRadius: 20),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 10,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Active Workout',
+                                style: TextStyle(color: Color(0xFFB080FF), fontSize: 13, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                activeProgress.programTitle,
+                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            durationString,
+                            style: TextStyle(
+                              color: activeProgress.isPaused ? Colors.amberAccent : Colors.greenAccent,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'SF Pro Display',
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.fitness_center, color: Colors.white60, size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              '${activeProgress.currentExerciseName} • Set ${activeProgress.currentSetNumber}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '${activeProgress.completedSets}/${activeProgress.totalSets} Sets',
+                            style: const TextStyle(color: Colors.white54, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: progressPercent,
+                          backgroundColor: Colors.white10,
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6900FF)),
+                          minHeight: 8,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
 
           const SizedBox(height: 80),
