@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'database_service.dart';
+import '../models/exercise.dart';
 
 class ActiveWorkoutProgress {
   final String programId;
@@ -151,17 +152,42 @@ class WorkoutSessionManager {
   bool isTimerRunning() => _isWorkoutActive;
   Duration getDuration() => _currentDuration;
 
-  Future<void> completeAndStopWorkout() async {
+  Future<void> completeAndStopWorkout(List<Exercise> exercisesList) async {
     final progress = activeWorkout.value;
 
     if (progress != null) {
+      double totalVolume = 0.0;
+      int totalRepsCount = 0;
+
+      // Проходимо по списку завантажених вправ
+      for (var exercise in exercisesList) {
+        // Отримуємо список галочок для цієї вправи [true, false, true, ...]
+        final checkedList = setsCheckedStatus[exercise.id] ?? [];
+
+        // Перевіряємо кожен підхід
+        for (int i = 0; i < checkedList.length; i++) {
+          // Рахуємо дані ТІЛЬКИ якщо підхід виконано (стоїть галочка)
+          if (checkedList[i] == true) {
+            // Додаємо повторення
+            totalRepsCount += exercise.reps;
+
+            // Додаємо об'єм (вага * повторення). Якщо вага null, вважаємо за 0
+            double weight = exercise.weight ?? 0.0;
+            totalVolume += (exercise.reps * weight);
+          }
+        }
+      }
+
       final DatabaseService dbService = DatabaseService();
-      // Зверни увагу: використовуємо await для синхронізації з Firebase
+
+      // Викликаємо метод збереження, передаючи розраховані Volume та Reps
       await dbService.saveCompletedWorkout(
         programTitle: progress.programTitle,
         totalSets: progress.totalSets,
         completedSets: progress.completedSets,
         durationInSeconds: progress.duration.inSeconds,
+        totalVolume: totalVolume,     // ПЕРЕДАЄМО РОЗРАХОВАНИЙ ОБ'ЄМ
+        totalReps: totalRepsCount,    // ПЕРЕДАЄМО РОЗРАХОВАНІ ПОВТОРЕННЯ
       );
     }
 

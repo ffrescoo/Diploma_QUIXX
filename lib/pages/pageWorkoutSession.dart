@@ -31,6 +31,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
   late Stream<List<Exercise>> _exercisesStream;
   Timer? _localUiUpdateTimer;
 
+  List<Exercise> _currentLoadedExercises = [];
   @override
   void initState() {
     super.initState();
@@ -84,7 +85,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
 
                 // 2. Запускаємо збереження у ФОНОВОМУ режиМІ (прибираємо await перед методом)
                 // Firestore сам додасть цей запис у внутрішню чергу і виконає його.
-                _sessionManager.completeAndStopWorkout().catchError((e) {
+                _sessionManager.completeAndStopWorkout(_currentLoadedExercises).catchError((e) {
                   debugPrint("Background error saving workout: $e");
                 });
 
@@ -242,6 +243,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
 
                       // snapshot.data тепер містить List<Exercise>
                       final exercisesList = snapshot.data ?? [];
+                      _currentLoadedExercises = exercisesList;
 
                       if (exercisesList.isEmpty) {
                         return const Center(

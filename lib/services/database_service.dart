@@ -78,6 +78,8 @@ class DatabaseService {
     required int totalSets,
     required int completedSets,
     required int durationInSeconds,
+    double totalVolume = 0.0,
+    int totalReps = 0,
   }) async {
     if (uid.isEmpty) return;
 
@@ -90,6 +92,8 @@ class DatabaseService {
       'totalSets': totalSets,
       'completedSets': completedSets,
       'durationInSeconds': durationInSeconds,
+      'totalVolume' : totalVolume,
+      'totalReps' : totalReps,
       'completedAt': FieldValue.serverTimestamp(), // Час завершення
     });
   }
@@ -145,36 +149,65 @@ class DatabaseService {
     await batch.commit();
   }
 
+  // МІСЦЕ ДЛЯ ІНТЕГРАЦІЇ: Реальний Firestore-запит для статистики
   Future<List<ChartData>> getMonthlyStats(String userId, String monthName, int year) async {
     int monthNumber = _getMonthNumber(monthName);
 
-    // Сюди інтегрується твій реальний запит до Firestore / SQLite.
-    // Наприклад: await _firestore.collection('users').doc(userId).collection('workouts')...
-    // Для прикладу ініціалізуємо пусті списки на 4 тижні:
+    // Ініціалізуємо порожні масиви на 4 тижні
     List<double> volumeValues = [0.0, 0.0, 0.0, 0.0];
     List<double> timeValues = [0.0, 0.0, 0.0, 0.0];
     List<double> repsValues = [0.0, 0.0, 0.0, 0.0];
 
-    // Тут має бути цикл обробки твоїх завантажених тренувань. Наприклад:
-    /*
-    final workouts = await fetchWorkoutsForMonth(userId, monthNumber, year);
-    for (var workout in workouts) {
-      int weekIndex = _getWeekIndex(workout.date);
-      volumeValues[weekIndex] += workout.volume;
-      timeValues[weekIndex] += workout.durationInHours;
-      repsValues[weekIndex] += workout.reps;
-    }
-    */
+    // Розраховуємо часові межі (діапазон) для поточного місяця
+    DateTime startOfMonth = DateTime(year, monthNumber, 1);
+    DateTime endOfMonth = DateTime(year, monthNumber + 1, 1).subtract(const Duration(milliseconds: 1));
 
-    // Тимчасові мокові дані для перевірки, які змінюються залежно від місяця:
-    if (monthName == 'March') {
-      volumeValues = [2800.0, 4200.0, 5533.0, 1700.0];
-      timeValues = [75.6, 23.0, 46.2, 41.0];
-      repsValues = [120.0, 274.0, 183.0, 620.0];
-    } else {
-      volumeValues = [1500.0, 3200.0, 2100.0, 4800.0];
-      timeValues = [20.0, 45.5, 60.0, 30.2];
-      repsValues = [300.0, 150.0, 420.0, 210.0];
+    try {
+      // Робимо запит до колекції history конкретного користувача за обраний проміжок часу
+      final querySnapshot = await _db
+          .collection('users')
+          .doc(userId.isNotEmpty ? userId : uid) // Якщо userId пустий, беремо uid поточного юзера
+          .collection('history')
+          .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
+          .where('completedAt', isLessThanOrEqualTo: Timestamp.fromDate(endOfMonth))
+          .get();
+
+      // Обробляємо отримані документи тренувань
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+
+        // Отримуємо дату тренування з Timestamp
+        final timestamp = data['completedAt'] as Timestamp?;
+        if (timestamp == null) continue;
+        DateTime workoutDate = timestamp.toDate();
+
+        // Визначаємо індекс тижня (0, 1, 2 або 3)
+        int weekIndex = _getWeekIndex(workoutDate);
+
+        // Безпечно отримуємо та додаємо дані об'єму (Volume)
+        double volume = 0.0;
+        if (data['totalVolume'] != null) {
+          volume = (data['totalVolume'] as num).toDouble();
+        }
+        volumeValues[weekIndex] += volume;
+
+        // Безпечно отримуємо тривалість тренування та переводимо її у хвилини (Time)
+        if (data['durationInSeconds'] != null) {
+          double minutes = (data['durationInSeconds'] as num).toDouble() / 60.0;
+          // Округлимо до 1 знаку після коми для гарного відображення на графіку
+          timeValues[weekIndex] += double.parse(minutes.toStringAsFixed(1));
+        }
+
+        // Безпечно отримуємо та додаємо кількість повторень (Reps)
+        int reps = 0;
+        if (data['totalReps'] != null) {
+          reps = (data['totalReps'] as num).toInt();
+        }
+        repsValues[weekIndex] += reps.toDouble();
+      }
+    } catch (e) {
+      print("Помилка при завантаженні щомісячної статистики: $e");
+      // У разі помилки повертаються нульові масиви, щоб додаток не падав
     }
 
     return [
@@ -190,5 +223,13 @@ class DatabaseService {
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return months.indexOf(monthName) + 1;
+  }
+
+  int _getWeekIndex(DateTime date) {
+    int day = date.day;
+    if (day <= 7) return 0;   // 1-й тиждень
+    if (day <= 14) return 1;  // 2-й тиждень
+    if (day <= 21) return 2;  // 3-й тиждень
+    return 3;                 // 4-й тиждень (і залишок місяця)
   }
 }
