@@ -5,6 +5,9 @@ import '../navigation/appRouter.dart';
 import '../widgets/appDefaultLayout.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/user_session.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/database_service.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -216,72 +219,177 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildWorkoutSection() {
+    final DatabaseService databaseService = DatabaseService();
+
     return Column(
       spacing: 5,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Workout',
+          'Workout History',
           style: TextStyle(
             color: Colors.white54,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
-        Stack(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 36, left: 36, right: 36),
-              height: 150,
-              decoration: BoxDecoration(
-                  color: const Color(0xFF232323).withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white10)),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 24, left: 24, right: 24),
-              height: 150,
-              decoration: BoxDecoration(
-                  color: const Color(0xFF232323).withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white10)),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 12, left: 12, right: 12),
-              height: 150,
-              decoration: BoxDecoration(
-                  color: const Color(0xFF232323).withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white10)),
-            ),
-            Container(
-              width: double.infinity,
-              height: 150,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1B1B1B),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.fitness_center_rounded, size: 60, color: Colors.white54),
-                    SizedBox(height: 10),
-                    Text(
-                      'No Workouts',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+        StreamBuilder<QuerySnapshot>(
+          stream: databaseService.getCompletedWorkouts(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: CircularProgressIndicator(color: Colors.white54),
                 ),
-              ),
-            ),
-          ],
+              );
+            }
+
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              // Якщо історія порожня — показуємо ваш красивий Stack-дизайн
+              return _buildEmptyWorkoutPlaceholder();
+            }
+
+            final docs = snapshot.data!.docs;
+
+            return Column(
+              spacing: 10,
+              children: docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                return _buildCompletedWorkoutCard(data);
+              }).toList(),
+            );
+          },
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyWorkoutPlaceholder() {
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 36, left: 36, right: 36),
+          height: 150,
+          decoration: BoxDecoration(
+              color: const Color(0xFF232323).withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white10)),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 24, left: 24, right: 24),
+          height: 150,
+          decoration: BoxDecoration(
+              color: const Color(0xFF232323).withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white10)),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 12, left: 12, right: 12),
+          height: 150,
+          decoration: BoxDecoration(
+              color: const Color(0xFF232323).withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white10)),
+        ),
+        Container(
+          width: double.infinity,
+          height: 150,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1B1B1B),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.fitness_center_rounded, size: 60, color: Colors.white54),
+                SizedBox(height: 10),
+                Text(
+                  'No Workouts',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompletedWorkoutCard(Map<String, dynamic> data) {
+    final String title = data['title'] ?? 'Workout';
+    final int completedSets = data['completedSets'] ?? 0;
+    final int totalSets = data['totalSets'] ?? 0;
+    final int durationSeconds = data['durationInSeconds'] ?? 0;
+
+    // Форматування тривалості (хв:сек)
+    final minutes = (durationSeconds / 60).floor().toString().padLeft(2, '0');
+    final seconds = (durationSeconds % 60).toString().padLeft(2, '0');
+
+    // Форматування дати
+    String dateStr = '';
+    if (data['completedAt'] != null) {
+      final DateTime date = (data['completedAt'] as Timestamp).toDate();
+      dateStr = "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B1B1B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.greenAccent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const Icon(Icons.check_circle_outline_rounded, color: Colors.greenAccent, size: 26),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Sets: $completedSets/$totalSets • Time: $minutes:$seconds',
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (dateStr.isNotEmpty)
+            Text(
+              dateStr,
+              style: const TextStyle(
+                color: Colors.white30,
+                fontSize: 12,
+              ),
+            ),
+        ],
+      ),
     );
   }
 

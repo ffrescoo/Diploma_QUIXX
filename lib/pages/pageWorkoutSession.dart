@@ -7,6 +7,7 @@ import '../services/workout_session_manager.dart';
 import '../theme/glass_theme.dart';
 import '../widgets/appBackground.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:go_router/go_router.dart';
 
 class WorkoutSessionPage extends StatefulWidget {
   final String programId;
@@ -77,9 +78,20 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
             ),
             TextButton(
               onPressed: () {
-                _sessionManager.stopWorkout(); // Повністю очищуємо сесію, бо тренування завершено
+                // 1. Закриваємо діалогове вікно підтвердження
                 Navigator.pop(dialogContext);
-                Navigator.pop(context);
+
+                // 2. Запускаємо збереження у ФОНОВОМУ режиМІ (прибираємо await перед методом)
+                // Firestore сам додасть цей запис у внутрішню чергу і виконає його.
+                _sessionManager.completeAndStopWorkout().catchError((e) {
+                  debugPrint("Background error saving workout: $e");
+                });
+
+                // 3. МИТТЄВО перенаправляємо користувача без очікування завантаження.
+                // Використовуємо GoRouter, щоб уникнути чорного екрана
+                if (mounted) {
+                  context.go('/workout');
+                }
               },
               child: const Text('Finish', style: TextStyle(color: Color(0xFF6900FF), fontWeight: FontWeight.bold)),
             ),

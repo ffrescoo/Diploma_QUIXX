@@ -61,6 +61,41 @@ class DatabaseService {
         .orderBy('order', descending: false) // Сортуємо вправи за їхнім порядком
         .snapshots();
   }
+
+  // Метод для збереження завершеного тренування в історію
+  Future<void> saveCompletedWorkout({
+    required String programTitle,
+    required int totalSets,
+    required int completedSets,
+    required int durationInSeconds,
+  }) async {
+    if (uid.isEmpty) return;
+
+    await _db
+        .collection('users')
+        .doc(uid)
+        .collection('history')
+        .add({
+      'title': programTitle,
+      'totalSets': totalSets,
+      'completedSets': completedSets,
+      'durationInSeconds': durationInSeconds,
+      'completedAt': FieldValue.serverTimestamp(), // Час завершення
+    });
+  }
+
+  // Отримання потоку (Stream) завершених тренувань для сторінки профілю
+  Stream<QuerySnapshot> getCompletedWorkouts() {
+    if (uid.isEmpty) return const Stream.empty();
+
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('history')
+        .orderBy('completedAt', descending: true) // Спочатку найновіші
+        .snapshots();
+  }
+
   Future<void> updateWorkoutProgram(String programId, String newTitle) async {
     if (uid.isEmpty) return;
 

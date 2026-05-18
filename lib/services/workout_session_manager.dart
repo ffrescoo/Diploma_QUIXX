@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'database_service.dart';
 
 class ActiveWorkoutProgress {
   final String programId;
@@ -149,4 +150,30 @@ class WorkoutSessionManager {
 
   bool isTimerRunning() => _isWorkoutActive;
   Duration getDuration() => _currentDuration;
+
+  Future<void> completeAndStopWorkout() async {
+    final progress = activeWorkout.value;
+
+    if (progress != null) {
+      final DatabaseService dbService = DatabaseService();
+      // Зверни увагу: використовуємо await для синхронізації з Firebase
+      await dbService.saveCompletedWorkout(
+        programTitle: progress.programTitle,
+        totalSets: progress.totalSets,
+        completedSets: progress.completedSets,
+        durationInSeconds: progress.duration.inSeconds,
+      );
+    }
+
+    // Тільки після успішного await чистимо стан
+    _globalTimer?.cancel();
+    _globalTimer = null;
+    _currentDuration = Duration.zero;
+    _isWorkoutActive = false;
+    _activeProgramId = '';
+    _activeProgramTitle = '';
+    setsCheckedStatus.clear();
+    exerciseNames.clear();
+    activeWorkout.value = null;
+  }
 }
