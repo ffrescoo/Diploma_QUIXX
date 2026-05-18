@@ -8,6 +8,7 @@ import '../theme/glass_theme.dart';
 import '../widgets/appBackground.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:go_router/go_router.dart';
+import '../models/exercise.dart';
 
 class WorkoutSessionPage extends StatefulWidget {
   final String programId;
@@ -27,7 +28,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
   final DatabaseService _dbService = DatabaseService();
   final WorkoutSessionManager _sessionManager = WorkoutSessionManager();
 
-  late Stream<QuerySnapshot> _exercisesStream;
+  late Stream<List<Exercise>> _exercisesStream;
   Timer? _localUiUpdateTimer;
 
   @override
@@ -229,15 +230,20 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
 
                 // Список вправ із Firestore
                 Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: _exercisesStream,
+                  // 1. Змінюємо тип StreamBuilder на роботу зі списком об'єктів Exercise
+                  child: StreamBuilder<List<Exercise>>(
+                    stream: _exercisesStream, // Твій метод, який тепер повертає Stream<List<Exercise>>
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
                           child: CircularProgressIndicator(color: Colors.white24),
                         );
                       }
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+
+                      // snapshot.data тепер містить List<Exercise>
+                      final exercisesList = snapshot.data ?? [];
+
+                      if (exercisesList.isEmpty) {
                         return const Center(
                           child: Text(
                             'No exercises added to this program yet.',
@@ -246,23 +252,22 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                         );
                       }
 
-                      final exerciseDocs = snapshot.data!.docs;
-
                       return ListView.builder(
                         padding: EdgeInsets.zero,
-                        itemCount: exerciseDocs.length,
+                        itemCount: exercisesList.length,
                         itemBuilder: (context, index) {
-                          final doc = exerciseDocs[index];
-                          final exerciseId = doc.id;
-                          final data = doc.data() as Map<String, dynamic>;
-                          final String name = data['name'] ?? 'Unknown Exercise';
-                          final int setsCount = data['sets'] ?? 4;
-                          final int repsCount = data['reps'] ?? 10;
+                          // Отримуємо об'єкт вправи з нашої моделі
+                          final exercise = exercisesList[index];
+                          final exerciseId = exercise.id;
 
-                          _sessionManager.registerExerciseName(exerciseId, name);
+                          // Перевіряємо чи є робоча вага
+                          final bool hasWeight = exercise.weight != null && exercise.weight! > 0;
+
+                          // Реєструємо назву та ініціалізуємо чекбокси через менеджер сесій
+                          _sessionManager.registerExerciseName(exerciseId, exercise.name);
 
                           if (_sessionManager.setsCheckedStatus[exerciseId] == null) {
-                            _sessionManager.setsCheckedStatus[exerciseId] = List<bool>.filled(setsCount, false);
+                            _sessionManager.setsCheckedStatus[exerciseId] = List<bool>.filled(exercise.sets, false);
                           }
 
                           final List<bool> currentSets = _sessionManager.setsCheckedStatus[exerciseId]!;
@@ -277,13 +282,18 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    // Заголовок вправи
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          name,
-                                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                        Expanded(
+                                          child: Text(
+                                            exercise.name,
+                                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
+                                        const SizedBox(width: 10),
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
@@ -291,7 +301,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
-                                            '$setsCount sets x $repsCount reps',
+                                            '${exercise.sets} sets x ${exercise.reps} reps',
                                             style: const TextStyle(color: Color(0xFFB080FF), fontSize: 12, fontWeight: FontWeight.bold),
                                           ),
                                         ),
@@ -301,8 +311,9 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                                     const Divider(color: Colors.white10, height: 1),
                                     const SizedBox(height: 5),
 
+                                    // Список підходів (Кожен сет)
                                     Column(
-                                      children: List.generate(setsCount, (setIndex) {
+                                      children: List.generate(exercise.sets, (setIndex) {
                                         final isChecked = currentSets[setIndex];
 
                                         return Theme(
@@ -317,9 +328,19 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                                                 decoration: isChecked ? TextDecoration.lineThrough : TextDecoration.none,
                                               ),
                                             ),
+
+                                            // ОНОВЛЕНИЙ SUBTITLE: якщо є вага — показуємо "10 reps @ 80.0 kg", якщо немає — просто "10 reps"
                                             subtitle: Text(
-                                              '$repsCount reps',
-                                              style: TextStyle(color: isChecked ? Colors.white24 : Colors.white54, fontSize: 14),
+                                              hasWeight
+                                                  ? '${exercise.reps} reps @ ${exercise.weight} kg'
+                                                  : '${exercise.reps} reps',
+                                              style: TextStyle(
+                                                color: isChecked
+                                                    ? Colors.white24
+                                                    : (hasWeight ? const Color(0xFFB080FF) : Colors.white54),
+                                                fontSize: 14,
+                                                fontWeight: hasWeight ? FontWeight.w500 : FontWeight.normal,
+                                              ),
                                             ),
                                             value: isChecked,
                                             activeColor: const Color(0xFF6900FF),

@@ -13,7 +13,7 @@ class WorkoutTab extends StatelessWidget {
   void _showCreateProgramDialog(BuildContext context, DatabaseService dbService) {
     final controller = TextEditingController();
 
-    // Глобальний довідник вправ для вибору (прибрали порожні рядки)
+    // Глобальний довідник вправ для вибору
     final List<String> availableExercises = [
       'Bench Press',
       'Squats',
@@ -23,13 +23,13 @@ class WorkoutTab extends StatelessWidget {
       'Leg Press',
     ];
 
-    // Нова структура: { 'Назва вправи': { 'sets': 4, 'reps': 10 } }
-    final Map<String, Map<String, int>> selectedExercisesData = {};
+    // ЗМІНЕНО ТИП ДАНИХ: тепер dynamic замість int, щоб підтримувати double? для ваги
+    final Map<String, Map<String, dynamic>> selectedExercisesData = {};
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Дозволяє bottom sheet відкриватися на більшу висоту та адаптуватися під клавіатуру
-      backgroundColor: const Color(0xFF1E1B24), // Твоя базова темна палітра
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E1B24),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -37,7 +37,6 @@ class WorkoutTab extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setBottomSheetState) {
             return Padding(
-              // Динамічний відступ знизу, щоб клавіатура не перекривала поле введення
               padding: EdgeInsets.only(
                 top: 16,
                 left: 16,
@@ -48,12 +47,12 @@ class WorkoutTab extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Індикатор свайпу (Кастомний Handlebar)
+                  // Індикатор свайпу
                   Center(
                     child: Container(
                       width: 45,
                       height: 5,
-                      margin: const EdgeInsets.only(bottom:15),
+                      margin: const EdgeInsets.only(bottom: 15),
                       decoration: BoxDecoration(
                         color: Colors.white24,
                         borderRadius: BorderRadius.circular(10),
@@ -79,7 +78,7 @@ class WorkoutTab extends StatelessWidget {
                           if (controller.text.trim().isNotEmpty) {
                             dbService.addWorkoutProgram(
                               controller.text.trim(),
-                              selectedExercisesData, // Передаємо мапу з sets та reps
+                              selectedExercisesData, // Передається оновлена мапа в DatabaseService
                             );
                             Navigator.pop(context);
                           }
@@ -117,7 +116,7 @@ class WorkoutTab extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // Скрол меню з вправами на вибір та налаштуванням підходів/повторень
+                  // Скрол меню з вправами на вибір та налаштуванням підходів/повторень/ваги
                   Flexible(
                     child: ListView.builder(
                       shrinkWrap: true,
@@ -161,8 +160,8 @@ class WorkoutTab extends StatelessWidget {
                                   onChanged: (bool? value) {
                                     setBottomSheetState(() {
                                       if (value == true) {
-                                        // Задаємо дефолтні значення 4 підходи та 10 повторень при виборі
-                                        selectedExercisesData[exercise] = {'sets': 4, 'reps': 10};
+                                        // ДОДАНО: 'weight': null за замовчуванням
+                                        selectedExercisesData[exercise] = {'sets': 4, 'reps': 10, 'weight': null};
                                       } else {
                                         selectedExercisesData.remove(exercise);
                                       }
@@ -172,7 +171,8 @@ class WorkoutTab extends StatelessWidget {
                                 onTap: () {
                                   setBottomSheetState(() {
                                     if (!isSelected) {
-                                      selectedExercisesData[exercise] = {'sets': 4, 'reps': 10};
+                                      // ДОДАНО: 'weight': null за замовчуванням
+                                      selectedExercisesData[exercise] = {'sets': 4, 'reps': 10, 'weight': null};
                                     } else {
                                       selectedExercisesData.remove(exercise);
                                     }
@@ -180,54 +180,87 @@ class WorkoutTab extends StatelessWidget {
                                 },
                               ),
 
-                              // Якщо вправа обрана — показуємо інпути для введення даних
+                              // Якщо вправа обрана — показуємо інпути для введення даних (Sets, Reps, Weight)
                               if (isSelected)
                                 Padding(
                                   padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-                                  child: Row(
-                                    children: [
-                                      const Text('Sets:', style: TextStyle(color: Colors.white70)),
-                                      const SizedBox(width: 8),
-                                      SizedBox(
-                                        width: 45,
-                                        child: TextFormField(
-                                          initialValue: selectedExercisesData[exercise]?['sets'].toString(),
-                                          keyboardType: TextInputType.number,
-                                          style: const TextStyle(color: Colors.white),
-                                          decoration: const InputDecoration(
-                                            isDense: true,
-                                            contentPadding: EdgeInsets.symmetric(vertical: 4),
-                                            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
-                                            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        const Text('Sets:', style: TextStyle(color: Colors.white70)),
+                                        const SizedBox(width: 8),
+                                        SizedBox(
+                                          width: 35,
+                                          child: TextFormField(
+                                            initialValue: selectedExercisesData[exercise]?['sets'].toString(),
+                                            keyboardType: TextInputType.number,
+                                            style: const TextStyle(color: Colors.white),
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              contentPadding: EdgeInsets.symmetric(vertical: 4),
+                                              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+                                              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+                                            ),
+                                            onChanged: (val) {
+                                              final parsed = int.tryParse(val) ?? 4;
+                                              selectedExercisesData[exercise]?['sets'] = parsed;
+                                            },
                                           ),
-                                          onChanged: (val) {
-                                            final parsed = int.tryParse(val) ?? 4;
-                                            selectedExercisesData[exercise]?['sets'] = parsed;
-                                          },
                                         ),
-                                      ),
-                                      const SizedBox(width: 30),
-                                      const Text('Reps:', style: TextStyle(color: Colors.white70)),
-                                      const SizedBox(width: 8),
-                                      SizedBox(
-                                        width: 45,
-                                        child: TextFormField(
-                                          initialValue: selectedExercisesData[exercise]?['reps'].toString(),
-                                          keyboardType: TextInputType.number,
-                                          style: const TextStyle(color: Colors.white),
-                                          decoration: const InputDecoration(
-                                            isDense: true,
-                                            contentPadding: EdgeInsets.symmetric(vertical: 4),
-                                            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
-                                            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+                                        const SizedBox(width: 20),
+                                        const Text('Reps:', style: TextStyle(color: Colors.white70)),
+                                        const SizedBox(width: 8),
+                                        SizedBox(
+                                          width: 35,
+                                          child: TextFormField(
+                                            initialValue: selectedExercisesData[exercise]?['reps'].toString(),
+                                            keyboardType: TextInputType.number,
+                                            style: const TextStyle(color: Colors.white),
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              contentPadding: EdgeInsets.symmetric(vertical: 4),
+                                              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+                                              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+                                            ),
+                                            onChanged: (val) {
+                                              final parsed = int.tryParse(val) ?? 10;
+                                              selectedExercisesData[exercise]?['reps'] = parsed;
+                                            },
                                           ),
-                                          onChanged: (val) {
-                                            final parsed = int.tryParse(val) ?? 10;
-                                            selectedExercisesData[exercise]?['reps'] = parsed;
-                                          },
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(width: 20),
+
+                                        // ІНТЕГРОВАНО НОВЕ ПОЛЕ ДЛЯ РОБОЧОЇ ВАГИ:
+                                        const Text('Weight (kg):', style: TextStyle(color: Colors.white70)),
+                                        const SizedBox(width: 8),
+                                        SizedBox(
+                                          width: 55, // Трохи ширше поле для підтримки чисел на кшталт "102.5"
+                                          child: TextFormField(
+                                            initialValue: selectedExercisesData[exercise]?['weight']?.toString() ?? '',
+                                            // Тип клавіатури з підтримкою крапки/коми для дробових чисел
+                                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                            style: const TextStyle(color: Colors.white),
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              hintText: '—',
+                                              hintStyle: TextStyle(color: Colors.white30),
+                                              contentPadding: EdgeInsets.symmetric(vertical: 4),
+                                              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
+                                              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF6900FF))),
+                                            ),
+                                            onChanged: (val) {
+                                              // Замінюємо кому на крапку на випадок української локалізації клавіатури
+                                              final formattedVal = val.replaceAll(',', '.');
+                                              final parsed = double.tryParse(formattedVal);
+
+                                              // Якщо користувач очистив поле або ввів некоректно — записуємо null
+                                              selectedExercisesData[exercise]?['weight'] = parsed;
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                             ],

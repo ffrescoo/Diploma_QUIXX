@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/workout_program.dart';
+import '../models/exercise.dart';
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -23,10 +24,10 @@ class DatabaseService {
   }
 
   // Метод для додавання нової програми разом із обраними вправами та їхніми параметрами sets/reps
-  Future<void> addWorkoutProgram(String title, Map<String, Map<String, int>> exercisesData) async {
-    if (uid.isEmpty) return;
+  Future<void> addWorkoutProgram(String title, Map<String, Map<String, dynamic>> exercisesData) async {
+    if (uid.isEmpty) return; //
 
-    // 1. Створюємо головний документ програми всередині користувача
+    // 1. Створюємо головний документ програми
     final programRef = await _db
         .collection('users')
         .doc(uid)
@@ -34,23 +35,28 @@ class DatabaseService {
         .add({
       'title': title,
       'createdAt': FieldValue.serverTimestamp(),
-    });
+    }); //
 
-    int index = 1;
-    // 2. Записуємо кожну обрану вправу у вкладену підколекцію exercises цієї програми
+    int index = 1; //
+
+    // 2. Записуємо кожну вправу у підколекцію 'exercises'
     for (var entry in exercisesData.entries) {
+      // Отримуємо значення ваги. Якщо користувач нічого не ввів або це вправа з власною вагою (0), запишемо null
+      final weightValue = entry.value['weight'];
+
       await programRef.collection('exercises').add({
-        'name': entry.key,
-        'sets': entry.value['sets'] ?? 4, // Записуємо введені підходи (або 4 за дефолтом)
-        'reps': entry.value['reps'] ?? 10, // Записуємо введені повторення (або 10 за дефолтом)
-        'order': index, // Порядковий номер вправи у списку
+        'name': entry.key, //
+        'sets': entry.value['sets'] ?? 4, //
+        'reps': entry.value['reps'] ?? 10, //
+        'order': index, //
+        'weight': weightValue != null && weightValue > 0 ? weightValue : null, // ДОДАНО ПОЛЕ
       });
-      index++;
+      index++; //
     }
   }
   // Отримання потоку вправ для конкретної програми тренувань
-  Stream<QuerySnapshot> getProgramExercises(String programId) {
-    if (uid.isEmpty) return const Stream.empty();
+  Stream<List<Exercise>> getProgramExercises(String programId) {
+    if (uid.isEmpty) return Stream.value([]); // Повертаємо порожній список, якщо uid порожній
 
     return _db
         .collection('users')
@@ -58,8 +64,11 @@ class DatabaseService {
         .collection('programs')
         .doc(programId)
         .collection('exercises')
-        .orderBy('order', descending: false) // Сортуємо вправи за їхнім порядком
-        .snapshots();
+        .orderBy('order', descending: false) //
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => Exercise.fromFirestore(doc)) // Використовуємо фабричний конструктор
+        .toList());
   }
 
   // Метод для збереження завершеного тренування в історію
