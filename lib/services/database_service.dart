@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/workout_program.dart';
 import '../models/exercise.dart';
+import '../widgets/widget_chart.dart';
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -142,5 +143,52 @@ class DatabaseService {
 
     // Виконуємо пакет
     await batch.commit();
+  }
+
+  Future<List<ChartData>> getMonthlyStats(String userId, String monthName, int year) async {
+    int monthNumber = _getMonthNumber(monthName);
+
+    // Сюди інтегрується твій реальний запит до Firestore / SQLite.
+    // Наприклад: await _firestore.collection('users').doc(userId).collection('workouts')...
+    // Для прикладу ініціалізуємо пусті списки на 4 тижні:
+    List<double> volumeValues = [0.0, 0.0, 0.0, 0.0];
+    List<double> timeValues = [0.0, 0.0, 0.0, 0.0];
+    List<double> repsValues = [0.0, 0.0, 0.0, 0.0];
+
+    // Тут має бути цикл обробки твоїх завантажених тренувань. Наприклад:
+    /*
+    final workouts = await fetchWorkoutsForMonth(userId, monthNumber, year);
+    for (var workout in workouts) {
+      int weekIndex = _getWeekIndex(workout.date);
+      volumeValues[weekIndex] += workout.volume;
+      timeValues[weekIndex] += workout.durationInHours;
+      repsValues[weekIndex] += workout.reps;
+    }
+    */
+
+    // Тимчасові мокові дані для перевірки, які змінюються залежно від місяця:
+    if (monthName == 'March') {
+      volumeValues = [2800.0, 4200.0, 5533.0, 1700.0];
+      timeValues = [75.6, 23.0, 46.2, 41.0];
+      repsValues = [120.0, 274.0, 183.0, 620.0];
+    } else {
+      volumeValues = [1500.0, 3200.0, 2100.0, 4800.0];
+      timeValues = [20.0, 45.5, 60.0, 30.2];
+      repsValues = [300.0, 150.0, 420.0, 210.0];
+    }
+
+    return [
+      ChartData(title: "Volume", unitType: "volume", values: volumeValues),
+      ChartData(title: "Time", unitType: "time", values: timeValues),
+      ChartData(title: "Reps", unitType: "reps", values: repsValues),
+    ];
+  }
+
+  int _getMonthNumber(String monthName) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months.indexOf(monthName) + 1;
   }
 }

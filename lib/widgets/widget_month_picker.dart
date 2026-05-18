@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../theme/glass_theme.dart';
 
-class MonthPicker extends StatefulWidget {
-  const MonthPicker({super.key});
+class MonthPicker extends StatelessWidget {
+  // Додаємо обов'язкові параметри для зв'язку з батьківським віджетом
+  final String selectedMonth;
+  final ValueChanged<String> onMonthChanged;
 
-  @override
-  State<MonthPicker> createState() => _MonthPickerState();
-}
-
-class _MonthPickerState extends State<MonthPicker> {
-  String selectedMonth = 'March';
+  const MonthPicker({
+    super.key,
+    required this.selectedMonth,
+    required this.onMonthChanged,
+  });
 
   final List<String> _months = const [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -48,10 +49,9 @@ class _MonthPickerState extends State<MonthPicker> {
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
+                        // Якщо натиснули на інший місяць — викликаємо колбек
                         if (selectedMonth != month) {
-                          setState(() {
-                            selectedMonth = month;
-                          });
+                          onMonthChanged(month);
                         }
                       },
                       child: Padding(

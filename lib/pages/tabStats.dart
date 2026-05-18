@@ -1,26 +1,58 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../theme/glass_theme.dart';
 import '../widgets/widget_month_picker.dart';
 import '../widgets/widget_chart.dart';
 import '../widgets/appDefaultLayout.dart';
+import '../services/database_service.dart';
+import '../services/user_session.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class StatsTab extends StatelessWidget {
+class StatsTab extends StatefulWidget {
   const StatsTab({super.key});
 
-  Future<List<ChartData>> _loadChartData() async {
-    final String response = await rootBundle.loadString('assets/data/chart_data.json');
-    final List<dynamic> data = json.decode(response);
-    return data.map((json) => ChartData.fromJson(json)).toList();
+  @override
+  State<StatsTab> createState() => _StatsTabState();
+}
+
+class _StatsTabState extends State<StatsTab> {
+  // Стан поточного вибраного місяця та року
+  String _selectedMonth = 'March';
+  final int _currentYear = 2026;
+
+  final DatabaseService _dbService = DatabaseService();
+
+  // Новий метод отримання даних з БД замість читання локального файлу JSON
+  Future<List<ChartData>> _fetchStats() async {
+    // Отримуємо ID поточного користувача з сесії
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    // Робимо запит до нашого сервісу
+    return await _dbService.getMonthlyStats(userId, _selectedMonth, _currentYear);
+  }
+
+  // Допоміжний метод для розрахунку загального часу тренувань за місяць
+  String _calculateTotalTime(List<ChartData> data) {
+    try {
+      // Шукаємо графік із типом 'time'
+      final timeData = data.firstWhere((element) => element.unitType == 'time');
+      // Сумуємо значення за всі 4 тижні
+      final totalHours = timeData.values.reduce((a, b) => a + b);
+
+      if (totalHours >= 1) {
+        return '${totalHours.toStringAsFixed(1)} hours';
+      }
+      return '${(totalHours * 60).toInt()} mins';
+    } catch (_) {
+      return '0 mins';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AppDefaultLayout(
       body: FutureBuilder<List<ChartData>>(
-        future: _loadChartData(),
+        future: _fetchStats(), // Викликається знову при кожному виклику setState через зміну місяця
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: Colors.white));
@@ -47,14 +79,23 @@ class StatsTab extends StatelessWidget {
                         children: chartList.map((data) => GlassChart(chartData: data)).toList(),
                       ),
                     ),
-                    const MonthPicker(),
+                    // Інтегруємо MonthPicker з передачею стану та колбеку
+                    MonthPicker(
+                      selectedMonth: _selectedMonth,
+                      onMonthChanged: (month) {
+                        setState(() {
+                          _selectedMonth = month; // Змінюємо місяць, що викликає оновлення FutureBuilder
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
 
+              // Відображаємо динамічно розрахований час тренувань
               _buildStatPanel(
-                title: 'Time',
-                value: '56 mins',
+                title: 'Total Month Time',
+                value: _calculateTotalTime(chartList),
                 iconPath: 'assets/images/hourglass.png',
               ),
 
