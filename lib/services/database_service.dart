@@ -4,6 +4,7 @@ import '../models/workout_program.dart';
 import '../models/exercise.dart';
 import '../widgets/widget_chart.dart';
 import '../models/user_model.dart';
+import '../services/user_session.dart';
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -350,4 +351,20 @@ class DatabaseService {
     return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
   }
 
+// Метод для створення нового поста у глобальній стрічці
+  Future<void> createPost({required String description, String? postImageUrl}) async {
+    if (uid.isEmpty) return;
+
+    await _db.collection('posts').add({
+      'authorId': uid,
+      'username': UserSession.nickname,
+      // Якщо у вас буде додано поле аватара в UserSession, можна використовувати його.
+      // Поки залишаємо дефолтне або порожнє, якщо воно не налаштоване глобально.
+      'userImage': 'https://i.pinimg.com/736x/4b/15/d5/4b15d58ce2edc5107c7372b00fcde1e8.jpg',
+      'postImage': postImageUrl ?? '',
+      'likes': 0,
+      'description': description,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

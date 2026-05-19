@@ -7,6 +7,7 @@ import '../widgets/appDefaultLayout.dart';
 import '../widgets/widgetPost.dart';
 import '../services/user_session.dart';
 import '../widgets/user_search_delegate.dart';
+import '../widgets/widget_create_post.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -102,7 +103,14 @@ class HomeTab extends StatelessWidget {
                 ),
                 width: 40,
                 height: 40,
-                onTap: () {},
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => const CreatePostBottomSheet(),
+                  );
+                },
               ),
 
               GlassButton(
