@@ -14,7 +14,7 @@ class ShowcaseGlassTheme {
     ambientStrength: 1,
     lightIntensity: 0.2,
     lightAngle: standardLightAngle,
-    glassColor: Color(0xA5616161),
+    glassColor: Color(0xA5B3B3B3),
   );
 
   static LiquidGlassSettings get profileButtonWhiteLight => LiquidGlassSettings(
@@ -32,7 +32,7 @@ class ShowcaseGlassTheme {
     ambientStrength: 0.9,
     lightIntensity: 0.9,
     lightAngle: modalLightAngle,
-    glassColor: Color(0xA5000000),
+    glassColor: Color(0x35939393),
   );
 
   static LiquidGlassSettings get profilePanelDark => LiquidGlassSettings(
@@ -59,8 +59,8 @@ class ShowcaseGlassTheme {
     thickness: 45,
     ambientStrength: 0.5,
     lightIntensity: 0.1,
-    lightAngle: 45,
-    glassColor: Color(0xD0494949),
+    lightAngle: standardLightAngle,
+    glassColor: Color(0x80000000),
     refractiveIndex: 1.3,
     saturation: 1,
     chromaticAberration: 0.002,
@@ -71,13 +71,10 @@ class ShowcaseGlassTheme {
     thickness: 25,
     ambientStrength: 0.5,
     lightIntensity: 0.1,
-    lightAngle: 45,
-    glassColor: Color(0xD0494949),
+    lightAngle: modalLightAngle,
+    glassColor: Color(0x80000000),
     refractiveIndex: 1.3,
     saturation: 1,
     chromaticAberration: 0.002,
   );
-
-  static const GlassQuality standardQuality = GlassQuality.standard;
-  static const GlassQuality premiumQuality = GlassQuality.premium;
 }

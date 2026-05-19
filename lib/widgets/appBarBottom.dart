@@ -52,7 +52,7 @@ class AppBottomBar extends StatelessWidget {
       verticalPadding: 20,
       spacing: 10,
       indicatorColor: Colors.white24,
-      quality: ShowcaseGlassTheme.premiumQuality,
+      quality: GlassQuality.premium,
       glassSettings: ShowcaseGlassTheme.profileButtonBar,
       extraButton: extraButton,
       tabs: tabs,
