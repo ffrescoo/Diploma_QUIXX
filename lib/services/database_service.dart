@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/workout_program.dart';
 import '../models/exercise.dart';
 import '../widgets/widget_chart.dart';
+import '../models/user_model.dart';
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -231,5 +232,107 @@ class DatabaseService {
     if (day <= 14) return 1;  // 2-й тиждень
     if (day <= 21) return 2;  // 3-й тиждень
     return 3;                 // 4-й тиждень (і залишок місяця)
+  }
+
+  // Метод для підписки на користувача
+  Future<void> followUser(String targetUserId, String targetUsername, String targetAvatar) async {
+    if (uid.isEmpty || targetUserId == uid) return;
+
+    final batch = _db.batch();
+
+    // 1. Додаємо targetUserId у підколекцію 'following' поточного користувача
+    final followingRef = _db
+        .collection('users')
+        .doc(uid)
+        .collection('following')
+        .doc(targetUserId);
+    batch.set(followingRef, {
+      'username': targetUsername,
+      'avatarUrl': targetAvatar,
+      'followedAt': FieldValue.serverTimestamp(),
+    });
+
+    // 2. Додаємо поточного користувача (uid) у підколекцію 'followers' цільового користувача
+    // Примітка: для ідеального відображення тут можна було б брати дані з UserSession
+    final followerRef = _db
+        .collection('users')
+        .doc(targetUserId)
+        .collection('followers')
+        .doc(uid);
+    batch.set(followerRef, {
+      'followedAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+  }
+
+  // Метод для скасування підписки
+  Future<void> unfollowUser(String targetUserId) async {
+    if (uid.isEmpty) return;
+
+    final batch = _db.batch();
+
+    // 1. Видаляємо з 'following' поточного користувача
+    final followingRef = _db
+        .collection('users')
+        .doc(uid)
+        .collection('following')
+        .doc(targetUserId);
+    batch.delete(followingRef);
+
+    // 2. Видаляємо з 'followers' цільового користувача
+    final followerRef = _db
+        .collection('users')
+        .doc(targetUserId)
+        .collection('followers')
+        .doc(uid);
+    batch.delete(followerRef);
+
+    await batch.commit();
+  }
+
+  // Перевірка в реальному часі (через Stream), чи підписаний поточний користувач на targetUserId
+  Stream<bool> isFollowingStream(String targetUserId) {
+    if (uid.isEmpty) return Stream.value(false);
+
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('following')
+        .doc(targetUserId)
+        .snapshots()
+        .map((snapshot) => snapshot.exists);
+  }
+
+  // Отримання списку ID користувачів, на яких підписаний поточний юзер (для майбутньої стрічки)
+  Future<List<String>> getFollowingIds() async {
+    if (uid.isEmpty) return [];
+
+    final snapshot = await _db
+        .collection('users')
+        .doc(uid)
+        .collection('following')
+        .get();
+
+    return snapshot.docs.map((doc) => doc.id).toList();
+  }
+  // Отримання кількості тих, на кого підписаний користувач (Following)
+  Stream<int> getFollowingCountStream(String userId) {
+    return _db
+        .collection('users')
+        .doc(userId.isNotEmpty ? userId : uid)
+        .collection('following')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+
+  // Отримання кількості підписників користувача (Followers)
+  Stream<int> getFollowersCountStream(String userId) {
+    return _db
+        .collection('users')
+        .doc(userId.isNotEmpty ? userId : uid)
+        .collection('followers')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
   }
 }

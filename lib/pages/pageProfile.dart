@@ -103,6 +103,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildUserHeader() {
+    final dbService = DatabaseService();
+    final currentUserId = dbService.uid;
+
     return Container(
       width: double.infinity,
       height: 120,
@@ -127,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Text(
                     UserSession.nickname,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -137,9 +140,32 @@ class _ProfilePageState extends State<ProfilePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildStatItem("0", "Workouts"),
-                      _buildStatItem("0", "Followers"),
-                      _buildStatItem("0", "Following"),
+                      // Кількість тренувань (Workouts)
+                      StreamBuilder<QuerySnapshot>(
+                        stream: dbService.getCompletedWorkouts(),
+                        builder: (context, snapshot) {
+                          final workoutsCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                          return _buildStatItem("$workoutsCount", "Workouts");
+                        },
+                      ),
+
+                      // Кількість підписників (Followers)
+                      StreamBuilder<int>(
+                        stream: dbService.getFollowersCountStream(currentUserId),
+                        builder: (context, snapshot) {
+                          final followersCount = snapshot.data ?? 0;
+                          return _buildStatItem("$followersCount", "Followers");
+                        },
+                      ),
+
+                      // Кількість підписок (Following)
+                      StreamBuilder<int>(
+                        stream: dbService.getFollowingCountStream(currentUserId),
+                        builder: (context, snapshot) {
+                          final followingCount = snapshot.data ?? 0;
+                          return _buildStatItem("$followingCount", "Following");
+                        },
+                      ),
                     ],
                   ),
                 ],

@@ -17,6 +17,7 @@ class HomeTab extends StatelessWidget {
         spacing: 12,
         children: [
           QuixxPost(
+            authorId: 'user_ronnie_id',
             username: 'Ronny_Coleman',
             userImage: 'https://i.pinimg.com/736x/4b/15/d5/4b15d58ce2edc5107c7372b00fcde1e8.jpg',
             postImage: 'https://i.pinimg.com/736x/78/1a/d5/781ad5a4b0fae1f84554143c8a30ee2e.jpg',
@@ -25,6 +26,7 @@ class HomeTab extends StatelessWidget {
           ),
 
           QuixxPost(
+            authorId: 'user_kevin_id',
             username: 'Kevin_Levrone',
             userImage: 'https://i.pinimg.com/736x/bd/24/94/bd24941d814b277ac86576e44ceeb667.jpg',
             postImage: 'https://i.pinimg.com/736x/18/06/76/18067698b402c66f29b48eec4f86afd1.jpg',
@@ -33,6 +35,7 @@ class HomeTab extends StatelessWidget {
           ),
 
           QuixxPost(
+            authorId: 'user_jason_id',
             username: 'Jason_Statham',
             userImage: 'https://i.pinimg.com/736x/b6/f4/d1/b6f4d198ae1bfb3b24283551e623246d.jpg',
             postImage: 'https://i.pinimg.com/736x/49/c8/c6/49c8c66dfcbd415c21cccd86b9c0b554.jpg',
