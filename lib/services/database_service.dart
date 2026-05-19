@@ -335,4 +335,19 @@ class DatabaseService {
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
   }
+// Метод для пошуку користувачів за нікнеймом
+  Future<List<UserModel>> searchUsersByNickname(String query) async {
+    if (query.isEmpty) return [];
+
+    // Припускаємо, що у вашій колекції 'users' є поле 'nickname' або 'username'
+    // Використовуємо комбінацію пошуку від початкового рядка query до кінцевого діапазону символів \uf8ff
+    final snapshot = await _db
+        .collection('users')
+        .where('username', isGreaterThanOrEqualTo: query)
+        .where('username', isLessThanOrEqualTo: '$query\uf8ff')
+        .get();
+
+    return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+  }
+
 }

@@ -6,6 +6,7 @@ import '../navigation/appRouter.dart';
 import '../widgets/appDefaultLayout.dart';
 import '../widgets/widgetPost.dart';
 import '../services/user_session.dart';
+import '../widgets/user_search_delegate.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -77,6 +78,23 @@ class HomeTab extends StatelessWidget {
           Row(
             spacing: 10,
             children: [
+              GlassButton(
+                icon: const Icon(
+                  Icons.search,
+                  size: 20,
+                  color: Colors.white,
+                ),
+                width: 40,
+                height: 40,
+                onTap: () {
+                  // Виклик пошукового делегату Flutter
+                  showSearch(
+                    context: context,
+                    delegate: UserSearchDelegate(),
+                  );
+                },
+              ),
+
               GlassButton(
                 icon: ImageIcon(
                   AssetImage('assets/images/plus.png'),
