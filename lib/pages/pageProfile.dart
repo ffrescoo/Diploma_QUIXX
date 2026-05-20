@@ -21,7 +21,6 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedSegment = 0;
-  bool _isHistoryExpanded = false;
   late final Stream<QuerySnapshot> _workoutsStream;
   late final String _currentMonth;
   late final int _currentYear;
@@ -45,6 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
         spacing: 15,
         children: [
           _buildProfileCard(),
+          _buildPostsSection(),
           _buildWorkoutSection(),
         ],
       ),
@@ -59,6 +59,135 @@ class _ProfilePageState extends State<ProfilePage> {
             onTap: () => context.pop(),
           ),
           _buildTopActionButtons(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostsSection() {
+    final dummyPosts = [
+      {
+        'id': 'p1',
+        'content': 'First day testing the new routine. Massive pump in the upper body today! 🔥 irst day testing the new routine. Massive pump in the upper body today! 🔥 irst day testing the new routine. Massive pump in the upper body today! 🔥 irst day testing the new routine. Massive pump in the upper body today! 🔥',
+        'date': '20.05',
+        'likes': 24,
+        'hasImage': true,
+      },
+      {
+        'id': 'p2',
+        'content': 'Just a quick reminder: Consistency always beats intensity. Keep pushing! 🎯',
+        'date': '18.05',
+        'likes': 42,
+        'hasImage': false,
+      },
+      {
+        'id': 'p3',
+        'content': 'Pre-workout meal today: Oats, bananas, and a scoop of protein. Simple and effective.',
+        'date': '15.05',
+        'likes': 19,
+        'hasImage': false,
+      },
+      {
+        'id': 'p4',
+        'content': 'New personal record on deadlift today! 180kg feels like light weight baby! 🚀',
+        'date': '10.05',
+        'likes': 88,
+        'hasImage': true,
+      }
+    ];
+
+    return AnimatedStackSection<Map<String, dynamic>>(
+      title: 'My Posts',
+      items: dummyPosts,
+      cardHeight: 224.0, // Висота картки поста
+      itemIdProvider: (post) => post['id'] as String,
+      itemBuilder: (context, post) => _buildPostCardItem(post),
+    );
+  }
+
+  Widget _buildPostCardItem(Map<String, dynamic> data) {
+    return Container(
+      width: double.infinity,
+      height: 224,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B1B1B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 150,
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(
+              data['hasImage'] == true ? Icons.image_rounded : Icons.article_rounded,
+              color: Colors.white38,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          UserSession.nickname,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          data['date'] as String,
+                          style: const TextStyle(
+                            color: Colors.white30,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      data['content'] as String,
+                      maxLines: 7,
+                      overflow: TextOverflow.ellipsis,
+
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.favorite_rounded, color: Colors.redAccent, size: 16),
+                    const SizedBox(width: 5),
+                    Text(
+                      '${data['likes']}',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -325,7 +454,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 15),
 
-            // Наш селектор
             GlassSegmentedControl(
               segments: const ['Duration', 'Volume', 'Reps'],
               selectedIndex: _selectedSegment,
@@ -376,104 +504,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
         final docs = snapshot.data!.docs;
 
-        const double cardHeight = 80.0;
-        const double collapsedStep = 12.0;
-        const double expandedStep = cardHeight + 12.0;
-
-        final double totalHeight = _isHistoryExpanded
-            ? (docs.length * expandedStep) - 12.0
-            : cardHeight + (math.min(docs.length, 3) - 1) * collapsedStep;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Workout History',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IntrinsicWidth(
-                  child: GlassButton.custom(
-                    width: double.infinity,
-                    height: 26,
-                    shape: const LiquidRoundedSuperellipse(borderRadius: 13),
-                    onTap: () {
-                      setState(() {
-                        _isHistoryExpanded = !_isHistoryExpanded;
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 7),
-                      child: Text(
-                        _isHistoryExpanded ? 'Collapse' : 'Show all',
-                        style: const TextStyle(fontSize: 15, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.fastLinearToSlowEaseIn,
-              height: totalHeight,
-              width: double.infinity,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: docs.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  final data = entry.value.data() as Map<String, dynamic>;
-
-                  final bool isWithinTopThree = index < 3;
-                  final double collapsedTop = isWithinTopThree ? (index * collapsedStep) : (2 * collapsedStep);
-
-                  final double targetTop = _isHistoryExpanded
-                      ? (index * expandedStep)
-                      : collapsedTop;
-
-                  final double targetScale = _isHistoryExpanded
-                      ? 1.0
-                      : (isWithinTopThree ? 1.0 - (index * 0.04) : 0.92);
-
-                  final double targetOpacity = _isHistoryExpanded
-                      ? 1.0
-                      : (isWithinTopThree ? 1.0 - (index * 0.15) : 0.0);
-
-                  final bool isVisible = _isHistoryExpanded || isWithinTopThree;
-
-                  return AnimatedPositioned(
-                    key: ValueKey(entry.value.id),
-                    duration: Duration(milliseconds: 400 + (index * 30)),
-                    curve: Curves.fastOutSlowIn,
-                    top: targetTop,
-                    left: 0,
-                    right: 0,
-                    child: AnimatedOpacity(
-                      duration: Duration(milliseconds: _isHistoryExpanded ? 300 : 150),
-                      opacity: isVisible ? targetOpacity : 0.0,
-                      child: AnimatedScale(
-                        duration: const Duration(milliseconds: 450),
-                        curve: Curves.easeOutBack,
-                        scale: targetScale,
-                        alignment: Alignment.bottomCenter,
-                        child: IgnorePointer(
-                          ignoring: !isVisible,
-                          child: _buildCompletedWorkoutCard(data),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList().reversed.toList(),
-              ),
-            ),
-          ],
+        return AnimatedStackSection<QueryDocumentSnapshot>(
+          title: 'Workout History',
+          items: docs,
+          cardHeight: 80.0,
+          itemIdProvider: (doc) => doc.id,
+          itemBuilder: (context, doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return _buildCompletedWorkoutCard(data);
+          },
         );
       },
     );
@@ -649,13 +688,9 @@ class VolumeBarChartContent extends StatelessWidget {
       case 'volume':
         return '${(value / 1000).toStringAsFixed(0)}k kg';
       case 'time':
-        return value % 1 == 0
-            ? '${value.toInt()}h'
-            : '${value.toStringAsFixed(1)}h';
+        return value % 1 == 0 ? '${value.toInt()}h' : '${value.toStringAsFixed(1)}h';
       default:
-        return value % 1 == 0
-            ? value.toInt().toString()
-            : value.toStringAsFixed(1);
+        return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
     }
   }
 
@@ -667,124 +702,256 @@ class VolumeBarChartContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 35),
-            child: Text(
-              chartData.title,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 35),
+          child: Text(
+            chartData.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final count = chartData.values.length;
+              const spacing = 18.0;
+              final availableWidth = constraints.maxWidth - 150;
+              final rodWidth = math.max<double>(
+                2.0,
+                (availableWidth - spacing * (count + 1)) / count,
+              );
+
+              return fl_chart.BarChart(
+                fl_chart.BarChartData(
+                  maxY: maxY,
+                  alignment: fl_chart.BarChartAlignment.spaceEvenly,
+                  titlesData: fl_chart.FlTitlesData(
+                    bottomTitles: fl_chart.AxisTitles(
+                      sideTitles: fl_chart.SideTitles(
+                        showTitles: true,
+                        reservedSize: 20,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index >= labels.length) {
+                            return const SizedBox();
+                          }
+                          return fl_chart.SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            child: Text(
+                              labels[index],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 8,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    leftTitles: fl_chart.AxisTitles(
+                      sideTitles: fl_chart.SideTitles(
+                        showTitles: true,
+                        interval: interval,
+                        reservedSize: 35,
+                        getTitlesWidget: (value, meta) {
+                          if (!_isMainGrid(value)) {
+                            return const SizedBox();
+                          }
+                          return fl_chart.SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            child: Text(
+                              _formatYLabel(value),
+                              maxLines: 1,
+                              softWrap: false,
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 8,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: const fl_chart.AxisTitles(sideTitles: fl_chart.SideTitles(showTitles: false)),
+                    topTitles: const fl_chart.AxisTitles(sideTitles: fl_chart.SideTitles(showTitles: false)),
+                  ),
+                  gridData: fl_chart.FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: interval,
+                    checkToShowHorizontalLine: _isMainGrid,
+                    getDrawingHorizontalLine: (_) => fl_chart.FlLine(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: fl_chart.FlBorderData(
+                    show: true,
+                    border: Border(
+                      left: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
+                      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
+                    ),
+                  ),
+                  barGroups: List.generate(chartData.values.length, (i) {
+                    return fl_chart.BarChartGroupData(
+                      x: i,
+                      barRods: [
+                        fl_chart.BarChartRodData(
+                          toY: chartData.values[i],
+                          color: const Color(0xFFD1CFD7),
+                          width: rodWidth,
+                          borderRadius: BorderRadius.zero,
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Універсальний віджет для створення анімованого каскадного списку (стека)
+class AnimatedStackSection<T> extends StatefulWidget {
+  final String title;
+  final List<T> items;
+  final double cardHeight;
+  final double collapsedStep;
+  final Widget Function(BuildContext context, T item) itemBuilder;
+  final String Function(T item) itemIdProvider;
+
+  const AnimatedStackSection({
+    super.key,
+    required this.title,
+    required this.items,
+    required this.cardHeight,
+    this.collapsedStep = 12.0,
+    required this.itemBuilder,
+    required this.itemIdProvider,
+  });
+
+  @override
+  State<AnimatedStackSection<T>> createState() => _AnimatedStackSectionState<T>();
+}
+
+class _AnimatedStackSectionState<T> extends State<AnimatedStackSection<T>> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.items.isEmpty) return const SizedBox.shrink();
+
+    final double expandedStep = widget.cardHeight + widget.collapsedStep;
+
+    final double totalHeight = _isExpanded
+        ? (widget.items.length * expandedStep) - widget.collapsedStep
+        : widget.cardHeight + (math.min(widget.items.length, 3) - 1) * widget.collapsedStep;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.title,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
+                color: Colors.white54,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final count = chartData.values.length;
-                const spacing = 18.0;
-                final availableWidth = constraints.maxWidth - 150;
-                final rodWidth = math.max<double>(
-                  2.0,
-                  (availableWidth - spacing * (count + 1)) / count,
-                );
-
-                return fl_chart.BarChart(
-                  fl_chart.BarChartData(
-                    maxY: maxY,
-                    alignment: fl_chart.BarChartAlignment.spaceEvenly,
-                    titlesData: fl_chart.FlTitlesData(
-                      bottomTitles: fl_chart.AxisTitles(
-                        sideTitles: fl_chart.SideTitles(
-                          showTitles: true,
-                          reservedSize: 20,
-                          getTitlesWidget: (value, meta) {
-                            final index = value.toInt();
-                            if (index >= labels.length) {
-                              return const SizedBox();
-                            }
-                            return fl_chart.SideTitleWidget(
-                              axisSide: meta.axisSide,
-                              child: Text(
-                                labels[index],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 8,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      leftTitles: fl_chart.AxisTitles(
-                        sideTitles: fl_chart.SideTitles(
-                          showTitles: true,
-                          interval: interval,
-                          reservedSize: 35,
-                          getTitlesWidget: (value, meta) {
-                            if (!_isMainGrid(value)) {
-                              return const SizedBox();
-                            }
-                            return fl_chart.SideTitleWidget(
-                              axisSide: meta.axisSide,
-                              child: Text(
-                                _formatYLabel(value),
-                                maxLines: 1,
-                                softWrap: false,
-                                textAlign: TextAlign.right,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 8,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      rightTitles: const fl_chart.AxisTitles(sideTitles: fl_chart.SideTitles(showTitles: false)),
-                      topTitles: const fl_chart.AxisTitles(sideTitles: fl_chart.SideTitles(showTitles: false)),
-                    ),
-                    gridData: fl_chart.FlGridData(
-                      show: true,
-                      drawVerticalLine: false,
-                      horizontalInterval: interval,
-                      checkToShowHorizontalLine: _isMainGrid,
-                      getDrawingHorizontalLine: (_) => fl_chart.FlLine(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        strokeWidth: 1,
-                      ),
-                    ),
-                    borderData: fl_chart.FlBorderData(
-                      show: true,
-                      border: Border(
-                        left: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
-                        bottom: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
-                      ),
-                    ),
-                    barGroups: List.generate(chartData.values.length, (i) {
-                      return fl_chart.BarChartGroupData(
-                        x: i,
-                        barRods: [
-                          fl_chart.BarChartRodData(
-                            toY: chartData.values[i],
-                            color: const Color(0xFFD1CFD7),
-                            width: rodWidth,
-                            borderRadius: BorderRadius.zero,
-                          ),
-                        ],
-                      );
-                    }),
+            IntrinsicWidth(
+              child: GlassButton.custom(
+                width: double.infinity,
+                height: 26,
+                shape: const LiquidRoundedSuperellipse(borderRadius: 13),
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 7),
+                  child: Text(
+                    _isExpanded ? 'Collapse' : 'Show all',
+                    style: const TextStyle(fontSize: 15, color: Colors.white),
                   ),
-                );
-              },
+                ),
+              ),
             ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastLinearToSlowEaseIn,
+          height: totalHeight,
+          width: double.infinity,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: widget.items.asMap().entries.map((entry) {
+              int index = entry.key;
+              final item = entry.value;
+
+              final bool isWithinTopThree = index < 3;
+              final double collapsedTop = isWithinTopThree
+                  ? (index * widget.collapsedStep)
+                  : (2 * widget.collapsedStep);
+
+              final double targetTop = _isExpanded
+                  ? (index * expandedStep)
+                  : collapsedTop;
+
+              final double targetScale = _isExpanded
+                  ? 1.0
+                  : (isWithinTopThree ? 1.0 - (index * 0.04) : 0.92);
+
+              final double targetOpacity = _isExpanded
+                  ? 1.0
+                  : (isWithinTopThree ? 1.0 - (index * 0.15) : 0.0);
+
+              final bool isVisible = _isExpanded || isWithinTopThree;
+
+              return AnimatedPositioned(
+                key: ValueKey(widget.itemIdProvider(item)),
+                duration: Duration(milliseconds: 400 + (index * 30)),
+                curve: Curves.fastOutSlowIn,
+                top: targetTop,
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  duration: Duration(milliseconds: _isExpanded ? 300 : 150),
+                  opacity: isVisible ? targetOpacity : 0.0,
+                  child: AnimatedScale(
+                    duration: const Duration(milliseconds: 450),
+                    curve: Curves.easeOutBack,
+                    scale: targetScale,
+                    alignment: Alignment.bottomCenter,
+                    child: IgnorePointer(
+                      ignoring: !isVisible,
+                      child: widget.itemBuilder(context, item),
+                    ),
+                  ),
+                ),
+              );
+            }).toList().reversed.toList(),
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 }
