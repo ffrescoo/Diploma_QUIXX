@@ -61,9 +61,13 @@ class _CreatePostBottomSheetState extends State<CreatePostBottomSheet> {
     try {
       String? imageUrl;
 
-      // Тимчасово передаємо локальний шлях, поки не підключено Firebase Storage
+
       if (_selectedImage != null) {
-        imageUrl = _selectedImage!.path;
+        imageUrl = await _databaseService.uploadImageToCloudinary(_selectedImage!);
+
+        if (imageUrl == null) {
+          throw Exception("Не вдалося завантажити фотографію на Cloudinary");
+        }
       }
 
       await _databaseService.createPost(

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../navigation/appRouter.dart';
 import '../widgets/appDefaultLayout.dart';
 import '../widgets/widgetPost.dart';
 import '../services/user_session.dart';
 import '../widgets/user_search_delegate.dart';
 import '../widgets/widget_create_post.dart';
+import '../services/database_service.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -15,37 +18,6 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppDefaultLayout(
-      body: Column(
-        spacing: 12,
-        children: [
-          QuixxPost(
-            authorId: 'user_ronnie_id',
-            username: 'Ronny_Coleman',
-            userImage: 'https://i.pinimg.com/736x/4b/15/d5/4b15d58ce2edc5107c7372b00fcde1e8.jpg',
-            postImage: 'https://i.pinimg.com/736x/78/1a/d5/781ad5a4b0fae1f84554143c8a30ee2e.jpg',
-            likes: 4556566,
-            description: 'The mind is the limit. As long as the mind can envision the fact that you can do something, you can do it.',
-          ),
-
-          QuixxPost(
-            authorId: 'user_kevin_id',
-            username: 'Kevin_Levrone',
-            userImage: 'https://i.pinimg.com/736x/bd/24/94/bd24941d814b277ac86576e44ceeb667.jpg',
-            postImage: 'https://i.pinimg.com/736x/18/06/76/18067698b402c66f29b48eec4f86afd1.jpg',
-            likes: 653,
-            description: 'Go BIG or go home',
-          ),
-
-          QuixxPost(
-            authorId: 'user_jason_id',
-            username: 'Jason_Statham',
-            userImage: 'https://i.pinimg.com/736x/b6/f4/d1/b6f4d198ae1bfb3b24283551e623246d.jpg',
-            postImage: 'https://i.pinimg.com/736x/49/c8/c6/49c8c66dfcbd415c21cccd86b9c0b554.jpg',
-            likes: 12735,
-            description: "You need to work in such a way that when you're gone, your results are so massive and your impact so complex, that it requires at least two people to even begin cleaning up the magnificent mess you’ve left behind.",
-          ),
-        ],
-      ),
       top: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -66,9 +38,9 @@ class HomeTab extends StatelessWidget {
                       width: 26,
                       height: 26,
                     ),
-                     Text(
-                       UserSession.nickname,
-                       style: TextStyle(fontSize: 18, color: Colors.white),
+                    Text(
+                      UserSession.nickname,
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ],
                 ),
@@ -97,7 +69,7 @@ class HomeTab extends StatelessWidget {
               ),
 
               GlassButton(
-                icon: ImageIcon(
+                icon: const ImageIcon(
                   AssetImage('assets/images/plus.png'),
                   size: 20,
                 ),
@@ -114,7 +86,7 @@ class HomeTab extends StatelessWidget {
               ),
 
               GlassButton(
-                icon: ImageIcon(
+                icon: const ImageIcon(
                   AssetImage('assets/images/bell.png'),
                   size: 20,
                 ),
@@ -125,6 +97,65 @@ class HomeTab extends StatelessWidget {
             ],
           ),
         ],
+      ),
+
+      // Оновлена частина: Використовуємо StreamBuilder для завантаження постів
+      body: StreamBuilder<QuerySnapshot>(
+        stream: DatabaseService().getPostsStream(),
+        builder: (context, snapshot) {
+          // 1. Стан завантаження даних
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 50.0),
+              child: Center(child: CircularProgressIndicator(color: Colors.white)),
+            );
+          }
+
+          // 2. Якщо сталася помилка
+          if (snapshot.hasError) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 50.0),
+              child: Center(
+                child: Text('Помилка завантаження стрічки', style: TextStyle(color: Colors.white)),
+              ),
+            );
+          }
+
+          // 3. Якщо постів ще немає
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 50.0),
+              child: Center(
+                child: Text('Стрічка порожня. Створіть перший пост!', style: TextStyle(color: Colors.white)),
+              ),
+            );
+          }
+
+          // 4. Успішне отримання даних
+          final posts = snapshot.data!.docs;
+
+          return ListView.separated(
+            // Ці два параметри необхідні, якщо AppDefaultLayout вже
+            // забезпечує скролінг (наприклад, використовує SingleChildScrollView)
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: posts.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final postDoc = posts[index];
+              final postData = postDoc.data() as Map<String, dynamic>;
+
+              return QuixxPost(
+                authorId: postData['authorId'] ?? '',
+                username: postData['username'] ?? 'Unknown',
+                userImage: postData['userImage'] ?? 'https://i.pinimg.com/736x/4b/15/d5/4b15d58ce2edc5107c7372b00fcde1e8.jpg',
+                postImage: postData['postImage'] ?? '',
+                likes: postData['likes'] ?? 0,
+                description: postData['description'] ?? '',
+              );
+            },
+          );
+        },
       ),
     );
   }

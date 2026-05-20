@@ -5,6 +5,9 @@ import '../models/exercise.dart';
 import '../widgets/widget_chart.dart';
 import '../models/user_model.dart';
 import '../services/user_session.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -366,5 +369,44 @@ class DatabaseService {
       'description': description,
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+  // Метод для завантаження зображення на Cloudinary
+  Future<String?> uploadImageToCloudinary(File imageFile) async {
+    // ЗАМІНІТЬ НА ВАШІ ДАНІ З CLOUDINARY
+    const String cloudName = 'dkgkmlhpx';
+    const String uploadPreset = 'quixx_posts'; // Ваш Unsigned preset
+
+    final Uri uri = Uri.parse('https://api.cloudinary.com/v1_1/dkgkmlhpx/image/upload');
+
+    // Створюємо multipart запит для відправки файлу
+    final request = http.MultipartRequest('POST', uri)
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+    try {
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        // Читаємо відповідь від сервера
+        final responseData = await response.stream.bytesToString();
+        final jsonResponse = json.decode(responseData);
+
+        // Отримуємо безпечне посилання на фотографію
+        return jsonResponse['secure_url'];
+      } else {
+        print('Помилка завантаження на Cloudinary: Код ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Помилка при відправці файлу: $e');
+      return null;
+    }
+  }
+  // Отримання потоку постів для глобальної стрічки
+  Stream<QuerySnapshot> getPostsStream() {
+    return _db
+        .collection('posts')
+        .orderBy('createdAt', descending: true) // Найновіші пости зверху
+        .snapshots();
   }
 }
