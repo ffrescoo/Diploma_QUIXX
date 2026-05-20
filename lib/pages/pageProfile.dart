@@ -22,6 +22,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedSegment = 0;
   late final Stream<QuerySnapshot> _workoutsStream;
+  late final Stream<QuerySnapshot> _myPostsStream;
   late final String _currentMonth;
   late final int _currentYear;
   late final Future<List<ChartData>> _statsFuture;
@@ -31,6 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _workoutsStream = _dbService.getCompletedWorkouts();
+    _myPostsStream = _dbService.getUserPostsStream(_dbService.uid);
     final now = DateTime.now();
     _currentMonth = DateFormat('MMMM').format(now);
     _currentYear = now.year;
@@ -65,47 +67,63 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildPostsSection() {
-    final dummyPosts = [
-      {
-        'id': 'p1',
-        'content': 'First day testing the new routine. Massive pump in the upper body today! 🔥 irst day testing the new routine. Massive pump in the upper body today! 🔥 irst day testing the new routine. Massive pump in the upper body today! 🔥 irst day testing the new routine. Massive pump in the upper body today! 🔥',
-        'date': '20.05',
-        'likes': 24,
-        'hasImage': true,
-      },
-      {
-        'id': 'p2',
-        'content': 'Just a quick reminder: Consistency always beats intensity. Keep pushing! 🎯',
-        'date': '18.05',
-        'likes': 42,
-        'hasImage': false,
-      },
-      {
-        'id': 'p3',
-        'content': 'Pre-workout meal today: Oats, bananas, and a scoop of protein. Simple and effective.',
-        'date': '15.05',
-        'likes': 19,
-        'hasImage': false,
-      },
-      {
-        'id': 'p4',
-        'content': 'New personal record on deadlift today! 180kg feels like light weight baby! 🚀',
-        'date': '10.05',
-        'likes': 88,
-        'hasImage': true,
-      }
-    ];
+    return StreamBuilder<QuerySnapshot>(
+      stream: _myPostsStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white54),
+          );
+        }
 
-    return AnimatedStackSection<Map<String, dynamic>>(
-      title: 'My Posts',
-      items: dummyPosts,
-      cardHeight: 224.0, // Висота картки поста
-      itemIdProvider: (post) => post['id'] as String,
-      itemBuilder: (context, post) => _buildPostCardItem(post),
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text('Помилка завантаження постів', style: TextStyle(color: Colors.white54)),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'У вас ще немає постів',
+                style: TextStyle(color: Colors.white54, fontSize: 16),
+              ),
+            ),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+
+        // Використовуємо QueryDocumentSnapshot замість Map<String, dynamic>
+        return AnimatedStackSection<QueryDocumentSnapshot>(
+          title: 'My Posts',
+          items: docs,
+          cardHeight: 224.0,
+          itemIdProvider: (doc) => doc.id,
+          itemBuilder: (context, doc) => _buildPostCardItem(doc),
+        );
+      },
     );
   }
 
-  Widget _buildPostCardItem(Map<String, dynamic> data) {
+  Widget _buildPostCardItem(QueryDocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    // Зчитуємо реальні дані з Firebase (назви полів взяті з твого tabHome.dart)
+    final String content = data['description'] ?? '';
+    final int likes = data['likes'] ?? 0;
+    final String postImage = data['postImage'] ?? '';
+    final bool hasImage = postImage.isNotEmpty;
+
+    // Форматуємо дату (якщо поле createdAt існує у твоїх документах Firebase)
+    String dateStr = '';
+    if (data.containsKey('createdAt') && data['createdAt'] != null) {
+      final DateTime date = (data['createdAt'] as Timestamp).toDate();
+      dateStr = "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}";
+    }
+
     return Container(
       width: double.infinity,
       height: 224,
@@ -123,9 +141,18 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(15),
+              // Якщо є зображення, можна його показати, або залишити іконку
+              image: hasImage
+                  ? DecorationImage(
+                image: NetworkImage(postImage),
+                fit: BoxFit.cover,
+              )
+                  : null,
             ),
-            child: Icon(
-              data['hasImage'] == true ? Icons.image_rounded : Icons.article_rounded,
+            child: hasImage
+                ? null
+                : const Icon(
+              Icons.article_rounded,
               color: Colors.white38,
               size: 28,
             ),
@@ -151,7 +178,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         Text(
-                          data['date'] as String,
+                          dateStr,
                           style: const TextStyle(
                             color: Colors.white30,
                             fontSize: 11,
@@ -161,10 +188,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      data['content'] as String,
+                      content,
                       maxLines: 7,
                       overflow: TextOverflow.ellipsis,
-
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -177,7 +203,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const Icon(Icons.favorite_rounded, color: Colors.redAccent, size: 16),
                     const SizedBox(width: 5),
                     Text(
-                      '${data['likes']}',
+                      '$likes',
                       style: const TextStyle(
                         color: Colors.white54,
                         fontSize: 12,

@@ -409,4 +409,12 @@ class DatabaseService {
         .orderBy('createdAt', descending: true) // Найновіші пости зверху
         .snapshots();
   }
+  // Отримання потоку постів конкретного користувача
+  Stream<QuerySnapshot> getUserPostsStream(String userId) {
+    return FirebaseFirestore.instance
+        .collection('posts') // Переконайся, що колекція називається саме так
+        .where('authorId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
 }
