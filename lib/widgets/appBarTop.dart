@@ -7,12 +7,14 @@ class AppHeaderBar extends StatelessWidget {
   final String title;
   final String secondButtonTitle;
   final double secondButtonWidth;
+  final VoidCallback? onAction;
 
   const AppHeaderBar({
     super.key,
     required this.title,
     required this.secondButtonTitle,
     this.secondButtonWidth = double.infinity,
+    this.onAction,
   });
 
   @override
@@ -58,7 +60,7 @@ class AppHeaderBar extends StatelessWidget {
                 width: secondButtonWidth,
                 height: 45,
                 shape: const LiquidRoundedSuperellipse(borderRadius: 25),
-                onTap: () => context.pop(),
+                onTap: onAction ?? () => context.pop(),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(

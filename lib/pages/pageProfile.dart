@@ -113,6 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     // Зчитуємо реальні дані з Firebase (назви полів взяті з твого tabHome.dart)
     final String content = data['description'] ?? '';
+    final String postUsername = data['username'] ?? UserSession.nickname;
     final int likes = data['likes'] ?? 0;
     final String postImage = data['postImage'] ?? '';
     final bool hasImage = postImage.isNotEmpty;
@@ -170,7 +171,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          UserSession.nickname,
+                          postUsername,
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 13,
@@ -268,65 +269,101 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildUserHeader() {
     final currentUserId = _dbService.uid;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 120,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              'assets/images/Avatar.svg',
-              height: 80,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    UserSession.nickname,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+    return StreamBuilder<DocumentSnapshot>(
+      // Слухаємо зміни в документі поточного користувача
+      stream: FirebaseFirestore.instance.collection('users').doc(currentUserId).snapshots(),
+      builder: (context, snapshot) {
+        // Дефолтні значення
+        String avatarUrl = 'assets/images/Avatar.svg';
+        String nickname = UserSession.nickname;
+
+        // Якщо дані завантажено з БД, беремо їх
+        if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists) {
+          final data = snapshot.data!.data() as Map<String, dynamic>?;
+          if (data != null) {
+            avatarUrl = data['avatarUrl'] ?? avatarUrl;
+            nickname = data['username'] ?? data['nickname'] ?? nickname;
+          }
+        }
+
+        // Перевіряємо, чи це посилання з інтернету (Cloudinary), чи локальний файл
+        Widget avatarWidget;
+        if (avatarUrl.startsWith('http')) {
+          avatarWidget = Image.network(avatarUrl, fit: BoxFit.cover);
+        } else {
+          avatarWidget = SvgPicture.asset(avatarUrl, fit: BoxFit.cover);
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          height: 120,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                // Віджет аватарки
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Colors.white10,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  clipBehavior: Clip.antiAlias,
+                  child: avatarWidget,
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      StreamBuilder<QuerySnapshot>(
-                        stream: _workoutsStream,
-                        builder: (context, snapshot) {
-                          final workoutsCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
-                          return _buildStatItem("$workoutsCount", "Workouts");
-                        },
+                      // Віджет нікнейму
+                      Text(
+                        nickname,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      StreamBuilder<int>(
-                        stream: _dbService.getFollowersCountStream(currentUserId),
-                        builder: (context, snapshot) {
-                          final followersCount = snapshot.data ?? 0;
-                          return _buildStatItem("$followersCount", "Followers");
-                        },
-                      ),
-                      StreamBuilder<int>(
-                        stream: _dbService.getFollowingCountStream(currentUserId),
-                        builder: (context, snapshot) {
-                          final followingCount = snapshot.data ?? 0;
-                          return _buildStatItem("$followingCount", "Following");
-                        },
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          StreamBuilder<QuerySnapshot>(
+                            stream: _workoutsStream,
+                            builder: (context, snapshot) {
+                              final workoutsCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                              return _buildStatItem("$workoutsCount", "Workouts");
+                            },
+                          ),
+                          StreamBuilder<int>(
+                            stream: _dbService.getFollowersCountStream(currentUserId),
+                            builder: (context, snapshot) {
+                              final followersCount = snapshot.data ?? 0;
+                              return _buildStatItem("$followersCount", "Followers");
+                            },
+                          ),
+                          StreamBuilder<int>(
+                            stream: _dbService.getFollowingCountStream(currentUserId),
+                            builder: (context, snapshot) {
+                              final followingCount = snapshot.data ?? 0;
+                              return _buildStatItem("$followingCount", "Following");
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

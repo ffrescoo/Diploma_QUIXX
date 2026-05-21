@@ -355,15 +355,33 @@ class DatabaseService {
   }
 
 // Метод для створення нового поста у глобальній стрічці
+  // Метод для створення нового поста у глобальній стрічці
   Future<void> createPost({required String description, String? postImageUrl}) async {
     if (uid.isEmpty) return;
 
+    // Значення за замовчуванням на випадок, якщо в базі ще немає профілю
+    String currentUsername = UserSession.nickname;
+    String currentAvatar = 'assets/images/Avatar.svg';
+
+    try {
+      // Отримуємо актуальні дані профілю користувача безпосередньо перед створенням поста
+      final userDoc = await _db.collection('users').doc(uid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        if (data != null) {
+          currentUsername = data['username'] ?? data['nickname'] ?? currentUsername;
+          currentAvatar = data['avatarUrl'] ?? currentAvatar;
+        }
+      }
+    } catch (e) {
+      print('Помилка при отриманні профілю для створення поста: $e');
+    }
+
+    // Записуємо пост із динамічними даними автора
     await _db.collection('posts').add({
       'authorId': uid,
-      'username': UserSession.nickname,
-      // Якщо у вас буде додано поле аватара в UserSession, можна використовувати його.
-      // Поки залишаємо дефолтне або порожнє, якщо воно не налаштоване глобально.
-      'userImage': 'https://i.pinimg.com/736x/4b/15/d5/4b15d58ce2edc5107c7372b00fcde1e8.jpg',
+      'username': currentUsername,
+      'userImage': currentAvatar, // Тепер тут актуальне посилання (Cloudinary або SVG-асет)
       'postImage': postImageUrl ?? '',
       'likes': 0,
       'description': description,
@@ -416,5 +434,52 @@ class DatabaseService {
         .where('authorId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots();
+  }
+  // Отримання профілю поточного користувача
+  Future<UserModel?> getUserProfile() async {
+    if (uid.isEmpty) return null;
+    final doc = await _db.collection('users').doc(uid).get();
+    if (doc.exists) {
+      return UserModel.fromFirestore(doc);
+    }
+    return null;
+  }
+
+  // Оновлення профілю користувача
+  // Оновлення профілю користувача та каскадне оновлення старих постів
+  Future<void> updateUserProfile(UserModel updatedUser) async {
+    if (uid.isEmpty) return;
+
+    // 1. Оновлюємо головний документ користувача
+    await _db.collection('users').doc(uid).set(
+      updatedUser.toFirestore(),
+      SetOptions(merge: true),
+    );
+
+    // 2. Оновлюємо нікнейм та аватарку у всіх старих постах цього користувача
+    try {
+      // Знаходимо всі пости, де автором є поточний користувач
+      final postsSnapshot = await _db
+          .collection('posts')
+          .where('authorId', isEqualTo: uid)
+          .get();
+
+      // Якщо пости існують, оновлюємо їх
+      if (postsSnapshot.docs.isNotEmpty) {
+        final batch = _db.batch();
+
+        for (var doc in postsSnapshot.docs) {
+          batch.update(doc.reference, {
+            'username': updatedUser.username,
+            'userImage': updatedUser.avatarUrl,
+          });
+        }
+
+        // Виконуємо всі зміни одночасно
+        await batch.commit();
+      }
+    } catch (e) {
+      print('Помилка при оновленні старих постів: $e');
+    }
   }
 }

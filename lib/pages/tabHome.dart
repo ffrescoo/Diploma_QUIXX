@@ -21,31 +21,62 @@ class HomeTab extends StatelessWidget {
       top: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IntrinsicWidth(
-            child: GlassButton.custom(
-              width: double.infinity,
-              height: 40,
-              shape: const LiquidRoundedSuperellipse(borderRadius: 20),
-              onTap: () => context.push(AppRouter.profile),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 7),
-                child: Row(
-                  spacing: 7,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/images/Avatar.svg',
-                      width: 26,
-                      height: 26,
+          // 1. ОНОВЛЕНА ЧАСТИНА: StreamBuilder для динамічного підвантаження аватара та нікнейму
+          StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance.collection('users').doc(DatabaseService().uid).snapshots(),
+            builder: (context, snapshot) {
+              String avatarUrl = 'assets/images/Avatar.svg';
+              String nickname = UserSession.nickname;
+
+              if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists) {
+                final data = snapshot.data!.data() as Map<String, dynamic>?;
+                if (data != null) {
+                  avatarUrl = data['avatarUrl'] ?? avatarUrl;
+                  nickname = data['username'] ?? data['nickname'] ?? nickname;
+                }
+              }
+
+              Widget avatarWidget;
+              if (avatarUrl.startsWith('http')) {
+                avatarWidget = Image.network(avatarUrl, width: 26, height: 26, fit: BoxFit.cover);
+              } else {
+                avatarWidget = SvgPicture.asset(avatarUrl, width: 26, height: 26, fit: BoxFit.cover);
+              }
+
+              return IntrinsicWidth(
+                child: GlassButton.custom(
+                  width: double.infinity,
+                  height: 40,
+                  shape: const LiquidRoundedSuperellipse(borderRadius: 20),
+                  onTap: () => context.push(AppRouter.profile),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 7),
+                    child: Row(
+                      spacing: 7,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Контейнер для скруглення аватара
+                        Container(
+                          width: 26,
+                          height: 26,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: avatarWidget,
+                        ),
+                        Text(
+                          nickname,
+                          style: const TextStyle(fontSize: 18, color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                    Text(
-                      UserSession.nickname,
-                      style: const TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
 
           Row(
@@ -99,7 +130,6 @@ class HomeTab extends StatelessWidget {
         ],
       ),
 
-      // Оновлена частина: Використовуємо StreamBuilder для завантаження постів
       body: StreamBuilder<QuerySnapshot>(
         stream: DatabaseService().getPostsStream(),
         builder: (context, snapshot) {
@@ -135,8 +165,6 @@ class HomeTab extends StatelessWidget {
           final posts = snapshot.data!.docs;
 
           return ListView.separated(
-            // Ці два параметри необхідні, якщо AppDefaultLayout вже
-            // забезпечує скролінг (наприклад, використовує SingleChildScrollView)
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: posts.length,
