@@ -97,7 +97,7 @@ class AppRouter {
       GoRoute(
         path: notificationsPage,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const NotificationsPage(),
+        builder: (context, state) => const PageNotifications(),
       ),
 
       GoRoute(

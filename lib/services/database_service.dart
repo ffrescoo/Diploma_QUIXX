@@ -268,6 +268,14 @@ class DatabaseService {
     });
 
     await batch.commit();
+
+    String currentUsername = UserSession.nickname;
+    await _sendAppNotification(
+      targetUserId: targetUserId,
+      type: 'follow',
+      message: '@$currentUsername почав читати вас.',
+      iconPath: 'assets/images/follow.png',
+    );
   }
 
   // Метод для скасування підписки
@@ -293,6 +301,14 @@ class DatabaseService {
     batch.delete(followerRef);
 
     await batch.commit();
+
+    String currentUsername = UserSession.nickname;
+    await _sendAppNotification(
+      targetUserId: targetUserId,
+      type: 'unfollow',
+      message: '@$currentUsername скасував підписку на вас.',
+      iconPath: 'assets/images/unfollow.png',
+    );
   }
 
   // Перевірка в реальному часі (через Stream), чи підписаний поточний користувач на targetUserId
@@ -355,6 +371,7 @@ class DatabaseService {
   }
 
   // Метод для додавання/видалення лайку
+  // Метод для додавання/видалення лайку
   Future<void> toggleLike(String postId) async {
     if (uid.isEmpty) return;
 
@@ -363,21 +380,27 @@ class DatabaseService {
 
     if (doc.exists) {
       final data = doc.data()!;
-      // Отримуємо список тих, хто лайкнув (або порожній список, якщо поле відсутнє)
       List<dynamic> likedBy = data['likedBy'] ?? [];
 
       if (likedBy.contains(uid)) {
-        // Якщо користувач вже лайкнув - прибираємо лайк
         await postRef.update({
           'likedBy': FieldValue.arrayRemove([uid]),
           'likes': FieldValue.increment(-1),
         });
       } else {
-        // Якщо ще не лайкнув - додаємо лайк
         await postRef.update({
           'likedBy': FieldValue.arrayUnion([uid]),
           'likes': FieldValue.increment(1),
         });
+
+        // --- ДОДАНО: Сповіщення про лайк ---
+        String currentUsername = UserSession.nickname;
+        await _sendAppNotification(
+          targetUserId: data['authorId'], // ID автора поста
+          type: 'like',
+          message: '@$currentUsername вподобав ваш пост.',
+          iconPath: 'assets/images/liked.png', // Ваша іконка
+        );
       }
     }
   }
@@ -415,6 +438,24 @@ class DatabaseService {
       'description': description,
       'createdAt': FieldValue.serverTimestamp(),
     });
+    try {
+      final followersSnapshot = await _db
+          .collection('users')
+          .doc(uid)
+          .collection('followers')
+          .get();
+
+      for (var doc in followersSnapshot.docs) {
+        await _sendAppNotification(
+          targetUserId: doc.id, // ID підписника
+          type: 'new_post',
+          message: '@$currentUsername опублікував новий пост.',
+          iconPath: 'assets/images/new_post.png',
+        );
+      }
+    } catch (e) {
+      print('Помилка при розсилці сповіщень про пост: $e');
+    }
   }
   // Метод для завантаження зображення на Cloudinary
   Future<String?> uploadImageToCloudinary(File imageFile) async {
@@ -539,5 +580,38 @@ class DatabaseService {
       if (doc.exists) return UserModel.fromFirestore(doc);
       return null;
     });
+  }
+  Future<void> _sendAppNotification({
+    required String targetUserId,
+    required String type,
+    required String message,
+    required String iconPath,
+  }) async {
+    // Не надсилаємо сповіщення самому собі
+    if (uid.isEmpty || targetUserId == uid) return;
+
+    await _db
+        .collection('users')
+        .doc(targetUserId)
+        .collection('notifications')
+        .add({
+      'type': type,
+      'message': message,
+      'iconPath': iconPath,
+      'senderId': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+      'isRead': false,
+    });
+  }
+  // Отримання потоку сповіщень для поточного користувача (найновіші зверху)
+  Stream<QuerySnapshot> get notificationsStream {
+    if (uid.isEmpty) return const Stream.empty();
+
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('notifications')
+        .orderBy('createdAt', descending: true) // Сортування від найновіших
+        .snapshots();
   }
 }
