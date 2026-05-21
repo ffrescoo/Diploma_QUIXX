@@ -4,6 +4,15 @@ import 'package:firebase_core/firebase_core.dart';
 import '../services/user_session.dart';
 import 'firebase_options.dart';
 import 'navigation/appRouter.dart';
+import '../services/push_notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Для роботи Firebase у фоновому ізоляті потрібна повторна ініціалізація
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint("Обробка фонового повідомлення: ${message.messageId}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +20,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  await PushNotificationService().init();
   await UserSession.init();
 
   await LiquidGlassWidgets.initialize();
