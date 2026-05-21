@@ -354,7 +354,34 @@ class DatabaseService {
     return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
   }
 
-// Метод для створення нового поста у глобальній стрічці
+  // Метод для додавання/видалення лайку
+  Future<void> toggleLike(String postId) async {
+    if (uid.isEmpty) return;
+
+    final postRef = _db.collection('posts').doc(postId);
+    final doc = await postRef.get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      // Отримуємо список тих, хто лайкнув (або порожній список, якщо поле відсутнє)
+      List<dynamic> likedBy = data['likedBy'] ?? [];
+
+      if (likedBy.contains(uid)) {
+        // Якщо користувач вже лайкнув - прибираємо лайк
+        await postRef.update({
+          'likedBy': FieldValue.arrayRemove([uid]),
+          'likes': FieldValue.increment(-1),
+        });
+      } else {
+        // Якщо ще не лайкнув - додаємо лайк
+        await postRef.update({
+          'likedBy': FieldValue.arrayUnion([uid]),
+          'likes': FieldValue.increment(1),
+        });
+      }
+    }
+  }
+
   // Метод для створення нового поста у глобальній стрічці
   Future<void> createPost({required String description, String? postImageUrl}) async {
     if (uid.isEmpty) return;
@@ -384,6 +411,7 @@ class DatabaseService {
       'userImage': currentAvatar, // Тепер тут актуальне посилання (Cloudinary або SVG-асет)
       'postImage': postImageUrl ?? '',
       'likes': 0,
+      'likedBy': [],
       'description': description,
       'createdAt': FieldValue.serverTimestamp(),
     });

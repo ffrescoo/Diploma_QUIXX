@@ -174,11 +174,13 @@ class HomeTab extends StatelessWidget {
               final postData = postDoc.data() as Map<String, dynamic>;
 
               return QuixxPost(
+                postId: postDoc.id,
                 authorId: postData['authorId'] ?? '',
                 username: postData['username'] ?? 'Unknown',
                 userImage: postData['userImage'] ?? 'https://i.pinimg.com/736x/4b/15/d5/4b15d58ce2edc5107c7372b00fcde1e8.jpg',
                 postImage: postData['postImage'] ?? '',
                 likes: postData['likes'] ?? 0,
+                likedBy: postData['likedBy'] ?? [],
                 description: postData['description'] ?? '',
               );
             },

@@ -5,21 +5,25 @@ import '../theme/glass_theme.dart';
 import '../services/database_service.dart';
 
 class QuixxPost extends StatelessWidget {
+  final String postId;
   final String authorId;
   final String username;
   final String userImage;
   final String postImage;
   final int likes;
+  final List<dynamic> likedBy;
   final String description;
 
   const QuixxPost({
     super.key,
+    required this.postId,
     required this.authorId,
     required this.username,
     required this.userImage,
     required this.postImage,
     required this.likes,
     required this.description,
+    required this.likedBy,
   });
 
   @override
@@ -76,31 +80,48 @@ class QuixxPost extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            IntrinsicWidth(
-                              child: GlassButton.custom(
-                                settings: ShowcaseGlassTheme.profileButtonWhite,
-                                width: double.infinity,
-                                height: 26,
-                                shape: const LiquidRoundedSuperellipse(borderRadius: 13),
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7),
-                                  child: Row(
-                                    spacing: 5,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const ImageIcon(
-                                        AssetImage('assets/images/like.png'),
-                                        size: 15,
+                            Builder(
+                                builder: (context) {
+                                  final isLiked = likedBy.contains(dbService.uid);
+
+                                  return IntrinsicWidth(
+                                    child: GlassButton.custom(
+                                      settings: isLiked
+                                          ? ShowcaseGlassTheme.profileButtonDark
+                                          : ShowcaseGlassTheme.profileButtonWhite,
+                                      width: double.infinity,
+                                      height: 26,
+                                      shape: const LiquidRoundedSuperellipse(borderRadius: 13),
+                                      onTap: () async {
+                                        await dbService.toggleLike(postId);
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7),
+                                        child: Row(
+                                          spacing: 5,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ImageIcon(
+                                              // Умова для вибору потрібної іконки
+                                              AssetImage(
+                                                isLiked ? 'assets/images/liked.png' : 'assets/images/like.png',
+                                              ),
+                                              size: 15,
+                                              color: Colors.white, // Завжди білий колір
+                                            ),
+                                            Text(
+                                              compactFormatter.format(likes),
+                                              style: const TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.white // Завжди білий колір
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      Text(
-                                        compactFormatter.format(likes),
-                                        style: const TextStyle(fontSize: 15, color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                                    ),
+                                  );
+                                }
                             ),
 
                             StreamBuilder<bool>(
