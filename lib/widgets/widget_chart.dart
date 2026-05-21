@@ -7,11 +7,13 @@ import '../theme/glass_theme.dart';
 class ChartData {
   final String title;
   final String unitType;
+  final String ySuffix; // ДОДАНО: суфікс (kg, lbs тощо)
   final List<double> values;
 
   const ChartData({
     required this.title,
     required this.unitType,
+    this.ySuffix = '', // За замовчуванням пусто
     required this.values,
   });
 
@@ -19,6 +21,7 @@ class ChartData {
     return ChartData(
       title: json['title'],
       unitType: json['unitType'],
+      ySuffix: json['ySuffix'] ?? '',
       values: (json['values'] as List).cast<double>(),
     );
   }
@@ -107,7 +110,10 @@ class _VolumeBarChartContent extends StatelessWidget {
 
     switch (chartData.unitType) {
       case 'volume':
-        return '${(value / 1000).toStringAsFixed(0)}k kg';
+      // Використовуємо суфікс, якщо є, або 'kg' за замовчуванням
+        final suffix = chartData.ySuffix.isNotEmpty ? chartData.ySuffix : 'kg';
+        // Виводимо з одним знаком після коми
+        return '${(value / 1000).toStringAsFixed(1)}k $suffix';
       case 'time':
         return value % 1 == 0
             ? '${value.toInt()}h'

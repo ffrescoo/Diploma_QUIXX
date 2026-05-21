@@ -482,4 +482,34 @@ class DatabaseService {
       print('Помилка при оновленні старих постів: $e');
     }
   }
+  // --- ДОДАНО ДЛЯ НАЛАШТУВАНЬ ОДИНИЦЬ ВИМІРУ ---
+
+  // Метод для оновлення конкретних налаштувань одиниць виміру
+  Future<void> updateUnitSettings({int? weight, int? distance, int? measurements}) async {
+    if (uid.isEmpty) return;
+    final Map<String, dynamic> updates = {};
+
+    if (weight != null) updates['weightUnit'] = weight;
+    if (distance != null) updates['distanceUnit'] = distance;
+    if (measurements != null) updates['measurementsUnit'] = measurements;
+
+    if (updates.isNotEmpty) {
+      try {
+        // Використовуємо update, щоб змінити ТІЛЬКИ передані поля
+        await _db.collection('users').doc(uid).update(updates);
+      } catch (e) {
+        // Якщо документа користувача ще не існує, створюємо його
+        await _db.collection('users').doc(uid).set(updates, SetOptions(merge: true));
+      }
+    }
+  }
+
+  // Потік даних профілю, щоб додаток реагував на зміну налаштувань у реальному часі
+  Stream<UserModel?> get userProfileStream {
+    if (uid.isEmpty) return Stream.value(null);
+    return _db.collection('users').doc(uid).snapshots().map((doc) {
+      if (doc.exists) return UserModel.fromFirestore(doc);
+      return null;
+    });
+  }
 }

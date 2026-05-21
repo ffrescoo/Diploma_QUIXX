@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/user_session.dart';
 import '../services/local_storage.dart';
+import '../services/database_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -19,6 +20,26 @@ class _SettingsPageState extends State<SettingsPage> {
   int _selectedSegment3 = 0;
   int _selectedSegment2 = 0;
   int _selectedSegment1 = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedSettings();
+  }
+
+  Future<void> _loadSavedSettings() async {
+    final weight = await LocalStorage.getWeightUnit();
+    final distance = await LocalStorage.getDistanceUnit();
+    final measurements = await LocalStorage.getMeasurementsUnit();
+    final notifications = await LocalStorage.getNotificationsState();
+
+    setState(() {
+      _selectedSegment1 = weight;
+      _selectedSegment2 = distance;
+      _selectedSegment3 = measurements;
+      _isNotificationsEnabled = notifications;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +78,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       segments: const ['kg', 'lbs'],
                       selectedIndex: _selectedSegment1,
                       onSegmentSelected: (index) {
-                        setState(() {
-                          _selectedSegment1 = index;
-                        });
+                        setState(() { _selectedSegment1 = index; });
+                        LocalStorage.saveWeightUnit(index);
+                        DatabaseService().updateUnitSettings(weight: index); // ДОДАНО
                       },
                     ),
                   ),
@@ -92,9 +113,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       segments: const ['kilometers', 'miles'],
                       selectedIndex: _selectedSegment2,
                       onSegmentSelected: (index) {
-                        setState(() {
-                          _selectedSegment2 = index;
-                        });
+                        setState(() { _selectedSegment2 = index; });
+                        LocalStorage.saveDistanceUnit(index);
+                        DatabaseService().updateUnitSettings(distance: index); // ДОДАНО
                       },
                     ),
                   ),
@@ -127,9 +148,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       segments: const ['cm', 'in'],
                       selectedIndex: _selectedSegment3,
                       onSegmentSelected: (index) {
-                        setState(() {
-                          _selectedSegment3 = index;
-                        });
+                        setState(() { _selectedSegment3 = index; });
+                        LocalStorage.saveMeasurementsUnit(index);
+                        DatabaseService().updateUnitSettings(measurements: index); // ДОДАНО
                       },
                     ),
                   ),
@@ -170,6 +191,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       setState(() {
                         _isNotificationsEnabled = value;
                       });
+                      LocalStorage.saveNotificationsState(value);
                     },
                   ),
                 ],
@@ -223,7 +245,29 @@ class _SettingsPageState extends State<SettingsPage> {
               ambientStrength: 0.6,
               thickness: 5,
             ),
-            onTap: () {},
+            onTap: () async {
+              try {
+                // 1. Видаляємо акаунт користувача з Firebase Auth
+                await FirebaseAuth.instance.currentUser?.delete();
+
+                // 2. Очищаємо локальні дані
+                await LocalStorage.clear();
+                UserSession.nickname = "Quixx User";
+
+                // 3. Перекидаємо на екран логіну
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              } on FirebaseAuthException catch (e) {
+                // Якщо з моменту останнього входу пройшло багато часу, Firebase вимагає re-authenticate.
+                // Тут можна додати Snackbar з повідомленням про помилку.
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting account: ${e.message}. Please login again.')),
+                  );
+                }
+              }
+            },
             child: const Text(
               'Delete account',
               style: TextStyle(
