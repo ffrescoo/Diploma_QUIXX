@@ -17,7 +17,7 @@ class StatsTab extends StatefulWidget {
 }
 
 class _StatsTabState extends State<StatsTab> {
-  String _selectedMonth = 'March';
+  String _selectedMonth = 'May';
   final int _currentYear = 2026;
   final DatabaseService _dbService = DatabaseService();
 
