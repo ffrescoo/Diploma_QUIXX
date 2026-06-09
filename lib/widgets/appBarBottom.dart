@@ -54,7 +54,7 @@ class AppBottomBar extends StatelessWidget {
       indicatorColor: Colors.white24,
       quality: GlassQuality.premium,
       glassSettings: ShowcaseGlassTheme.profileButtonBar,
-      extraButton: extraButton,
+      //extraButton: extraButton,
       tabs: tabs,
       selectedIndex: navigationShell.currentIndex,
       onTabSelected: (index) {

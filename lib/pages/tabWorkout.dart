@@ -19,7 +19,7 @@ class WorkoutTab extends StatelessWidget {
       'Squats',
       'Deadlift',
       'Pull-ups',
-      'Bicep Curls',
+      'Biceps Curls',
       'Leg Press',
     ];
 
